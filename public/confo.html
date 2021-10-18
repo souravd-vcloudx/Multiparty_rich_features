@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Multi-Party App</title>
+    <meta name="description" content="Webpage">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enablex - Conference</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/skins/minimal/minimal.css" />
+    <link rel="stylesheet" href="./assets/plugins/bootstrap4/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous" />
+    <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/style2.css">
+</head>
+
+<body class="custom-multi-app-page">
+    <div class="custom-multi-app-inner">
+        <div class="custom-app-wrapper">
+            <div class="inner">
+                <div class="recording-blink" style="margin: auto; font-size: x-large; visibility: hidden;">
+                    <div id="rec_notification-1" class="blink-image">
+                        <span><i class="fa fa-circle" style="color: red;"></i></span> Rec
+                    </div>
+                </div>
+                <div class="top-section">
+                    <div class="left-icons-tools">
+                        <div class="tools-inner">
+                            <ul>
+                                <li class="chat-btn">
+                                    <a>
+                                        <svg id="black_chat" viewBox="0 0 24 24" width="24" height="24"
+                                            stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
+                                            stroke-linejoin="round" class="css-i6dzq1">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z">
+                                            </path>
+                                        </svg>
+                                        <svg id="red_chat" viewBox="0 0 24 24" width="24" height="24" stroke="red"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1" style="display: none;">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z">
+                                            </path>
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <path
+                                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                            </path>
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li class="participant-btn">
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10 9 9 9 8 9"></polyline>
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li class="media-stats" onclick="showMediaStats();">
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li class="settings-btn">
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                            <path
+                                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                            </path>
+                                        </svg>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="screen-area">
+                        <div class="screen-inner" id="screen_share">
+                        </div>
+                    </div>
+                    <div class="video-area">
+                        <div class="row-fluid ">
+                            <div class="video-item item1">
+                                <div class="video-inner" id="self-view">
+
+                                </div>
+                                <div class="video-caption" style="display: none;">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" id="unmute-audio-small">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" id="mute-audio-small" style="display: none;">
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                                        <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" id="unmute-video-small">
+                                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" style="display: none;" id="mute-video-small">
+                                        <path
+                                            d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10">
+                                        </path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="video-item item2 remote-view-parent" style="display:none">
+                                <!-- <div class="video-item item2 remote-view-parent"> -->
+
+                                <div class="video-inner video-inner-parent">
+                                </div>
+                                <div class="video-caption">
+                                    <p>Alma Llogd</p>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1">
+                                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="call-disconnect">
+                                <a>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1"
+                                        style="transform: rotate(135deg);fill: #ff001d;stroke-width: 0;">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <span>Leave</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="chat-area">
+                        <div class="chat-head">
+                            <a href="#" class="blue-btn">
+                                <span>Live Chat</span>
+                            </a>
+                        </div>
+                        <div class="chat-body">
+                            <div class="chat-textarea">
+                                <div class="chat-item left" style="display: none;">
+                                    <div class="img">
+                                        <img src="images/user.jpeg" alt="User">
+                                    </div>
+                                    <div class="desc">
+                                        <div class="head">
+                                            <p>Marvin Lambert</p>
+                                        </div>
+                                        <div class="message">
+                                            <p>Hi Team 🙂</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-item right" style="display: none;">
+                                    <div class="desc">
+                                        <div class="head">
+                                            <p>Alma Llogd</p>
+                                        </div>
+                                        <div class="message">
+                                            <p>Hi Everyone! Let get Started.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="img">
+                                        <img src="images/user.jpeg" alt="User">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-footer">
+                            <div class="chat-typing-area">
+                                <div class="message-box">
+                                    <textarea type="text" class="message-input"
+                                        placeholder="Type your message"></textarea>
+                                    <button type="submit" class="message-submit" onclick="chatSend()">
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="participants-area">
+                        <div class="chat-head">
+                            <h3>Participants List</h3>
+                        </div>
+                        <div class="participants-inner">
+                            <div class="participants-item" style="display: none;">
+                                <!-- <div class="participant-img">
+                                    <img src="images/user.jpeg" alt="User">
+                                </div> -->
+                                <div class="participant-desc">
+                                    <div class="head">
+                                        <p>Marvin Lambert</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-area">
+                        <div class="chat-head">
+                            <h3>Device List</h3>
+                        </div>
+                        <div class="settings-inner">
+                            <div class="camera-item" style="flex-direction: column;">
+                                <!-- <div class="participant-img">
+                                    <img src="images/user.jpeg" alt="User">
+                                </div> -->
+                                <h5>Camera List</h5>
+                                <div class="participant-desc camera-desc">
+                                    <div class="head">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="participants-item microphone-item" style="flex-direction: column;">
+                                <!-- <div class="participant-img">
+                                    <img src="images/user.jpeg" alt="User">
+                                </div> -->
+                                <div>
+                                    <h5>Microphone List</h5>
+                                </div>
+                                <div class="participant-desc microphone-desc">
+                                    <div class="head">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="bottom-btns">
+                    <ul>
+                        <li class="cm-btn first-btn"><a>1</a></li>
+                        <li class="cm-btn second-btn"><a>2</a></li>
+                        <li class="cm-btn third-btn"><a>3</a></li>
+                        <li class="cm-btn fourth-btn"><a>4</a></li>
+                        <li class="cm-btn fifth-btn"><a>5</a></li>
+                        <li class="cm-btn sixth-btn"><a>6</a></li>
+                    </ul>
+                </div> -->
+                    <div class="recording-tools">
+                        <ul>
+                            <li class="menu-icon">
+                                <a>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1">
+                                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li>
+                                <a id="mute_btn" title="Mute/Unmute Audio">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" onclick="muteAudio()" id="unmute-audio-pic">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" onclick="unmuteAudio()" id="mute-audio-pic"
+                                        style="display: none;">
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                                        <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li>
+                                <a id="mutev_btn" title="Mute/Unmute Video">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" onclick="muteVideo()" id="unmute-video-pic">
+                                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" style="display: none;" onclick="unmuteVideo()"
+                                        id="mute-video-pic">
+                                        <path
+                                            d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10">
+                                        </path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="lock" title="Lock/Unlock Room">
+                                <a>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" id="lock_btn" onclick="unlockRoom();" style="display:none">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1" id="unlock_btn" onclick="lockRoom()">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li>
+                                <a>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1">
+                                        <path
+                                            d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                                        </path>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="cm-screen-share" onclick="screenShare()">
+                                <a>
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                        version="1.1" id="Capa_1" x="0px" y="0px" width="24" height="24"
+                                        viewBox="0 0 493.551 493.551" style="enable-background:new 0 0 493.551 493.551;"
+                                        xml:space="preserve">
+                                        <g>
+                                            <g>
+                                                <path
+                                                    d="M493.549,402.462H0v45.033h493.551v-45.033H493.549z M471.934,430.38h-39.629v-10.809h39.629V430.38L471.934,430.38z">
+                                                </path>
+                                                <polygon points="474.635,338.967 21.616,338.967 0,384 493.549,384   ">
+                                                </polygon>
+                                                <path
+                                                    d="M22.966,321.158h447.62V46.055H22.966V321.158z M72.049,85.195h349.447v196.827H72.049V85.195z">
+                                                </path>
+                                            </g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                        <g>
+                                        </g>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="recording-btn" title="Start/Stop Recording" onclick="startRecording()">
+                                <a>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="red" stroke-width="2"
+                                        fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="call-disconnect" title="End Call" onclick="disconnectCall()">
+                                <a id="disconnect_call">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                        stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                        class="css-i6dzq1"
+                                        style="transform: rotate(135deg);fill: #ff001d;stroke-width: 0;">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <span>Leave</span>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="js/main.js"></script> -->
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/tether.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+
+
+    <script type="text/javascript" src="assets/plugins/jscrollpane/jquery.mousewheel.js"></script>
+    <script type="text/javascript" src="assets/plugins/jscrollpane/mwheelIntent.js"></script>
+
+
+    <script type="text/javascript" src="js/scrollbar.js"></script>
+    <script type="text/javascript" src="js/EnxRtc.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="js/confo1.js"></script>
+    <script type="text/javascript" src="js/resonsive.js"></script>
+</body>
+
+</html>
