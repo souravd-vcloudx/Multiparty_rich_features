@@ -104,10 +104,24 @@ var confo_variables = {
                     ATList = event.message.activeList;
 
                     if (event.message && event.message !== null && event.message.activeList && event.message.activeList !== null) {
-                        if (ATList.length === 0) {
+                        if (ATList.length === 0 && document.querySelectorAll('.remote-view').length > 0) {
                             console.log("ATList length--" + ATList.length);
                             document.querySelector('.remote-view').remove();
                         }
+                        // if (ATList.length === 0 && document.querySelectorAll('.remote-view').length === 0) {
+                        //     let len = document.querySelectorAll('.custom-multi-app-page .video-area .video-item').length - 1;
+                        //     console.log("len---" + len);
+                        //     if (confo_variables.previousToggleClass !== '') {
+                        //         document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.replace(confo_variables.previousToggleClass, 'custom1');
+                        //         console.log("if previousToggleClass---" + confo_variables.previousToggleClass);
+                        //     }
+                        //     else {
+                        //         document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.toggle('custom1');
+                        //         console.log("else previousToggleClass---" + confo_variables.previousToggleClass);
+                        //     }
+                        //     confo_variables.previousToggleClass = 'custom1';
+                        //     return;
+                        // }
                         if (ATList.length == video_player_len.length) {
                             return;
                         }
