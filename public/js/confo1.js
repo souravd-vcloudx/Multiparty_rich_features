@@ -1,5 +1,11 @@
 // All variables are stored in object which are used in this file
 
+document.querySelector('.message-input').addEventListener('keydown',(e)=>{
+    if(e.key === 'Enter'){
+        chatSend();
+    }
+});
+
 var confo_variables = {
     searchParams: '',
     previousToggleClass: '',
@@ -66,7 +72,12 @@ var confo_variables = {
                 var local_name = document.querySelector('.video-caption p');
                 local_name.innerHTML = room.me.name;
 
+                var room_name = document.querySelector('.room-name h4');
+
                 isModerator = room.me.role == "moderator" ? true : false;
+                if (isModerator) {
+                    room_name.innerHTML = room.me.name;
+                }
 
                 if (!isModerator) {
                     document.querySelector('.lock').style.display = 'none';
@@ -286,6 +297,11 @@ var confo_variables = {
                         message.setAttribute('class', 'message');
                         message.innerHTML = `<p>${InMsg.message}</p>`;
                         desc.appendChild(message);
+                        var time_div = document.createElement('div');
+                        time_div.setAttribute('class', 'time');
+                        time_div.setAttribute('style','font-size: smaller');
+                        time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
+                        desc.appendChild(time_div);
                         chat_item.appendChild(desc);
                         chat_text_area.appendChild(chat_item);
                         document.querySelector('#black_chat').style.display = 'none';
@@ -426,12 +442,12 @@ var confo_variables = {
                 console.log("each - user---", user.name);
                 part_item = document.createElement('div');
                 part_item.setAttribute('class', 'participants-item');
-                part_item.setAttribute('style','justify-content: space-evenly')
+                part_item.setAttribute('style', 'justify-content: space-evenly')
                 var part_desc = document.createElement('div');
                 part_desc.setAttribute('class', 'participant-desc');
                 list = `<div class="head" id="user_${clientId}"><p>${user.name}</p></div>`;
                 part_desc.innerHTML = list;
-                
+
                 var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
                 small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
                 small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
@@ -443,16 +459,16 @@ var confo_variables = {
                 var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
                 small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
                 small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
-                
+
                 var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
                 small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
                 small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
-                
-                
+
+
                 part_item.appendChild(part_desc);
 
                 var icons_div = document.createElement('div');
-                icons_div.setAttribute('style','display:flex')
+                icons_div.setAttribute('style', 'display:flex')
                 icons_div.appendChild(small_unmute_audio);
                 icons_div.appendChild(small_mute_audio);
                 icons_div.appendChild(small_unmute_video);
@@ -482,6 +498,11 @@ var confo_variables = {
             message.setAttribute('class', 'message');
             message.innerHTML = `<p>${message_to_send}</p>`;
             desc.appendChild(message);
+            var time_div = document.createElement('div');
+            time_div.setAttribute('class', 'time');
+            time_div.setAttribute('style','font-size: smaller');
+            time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
+            desc.appendChild(time_div);
             chat_item.appendChild(desc);
             chat_text_area.appendChild(chat_item);
             document.querySelector('textarea').value = '';
@@ -546,6 +567,16 @@ var confo_variables = {
             else {
             }
         });
+    },
+    formatAMPM: function (date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var strTime = hours + ':' + minutes + ' ' + ampm;
+        return strTime;
     }
 
 
