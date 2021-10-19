@@ -1,11 +1,5 @@
 // All variables are stored in object which are used in this file
 
-document.querySelector('.message-input').addEventListener('keydown',(e)=>{
-    if(e.key === 'Enter'){
-        chatSend();
-    }
-});
-
 var confo_variables = {
     searchParams: '',
     previousToggleClass: '',
@@ -75,9 +69,9 @@ var confo_variables = {
                 var room_name = document.querySelector('.room-name h4');
 
                 isModerator = room.me.role == "moderator" ? true : false;
-                if (isModerator) {
-                    room_name.innerHTML = room.me.name;
-                }
+
+                room_name.innerHTML = success.roomData.name;
+
 
                 if (!isModerator) {
                     document.querySelector('.lock').style.display = 'none';
@@ -103,6 +97,7 @@ var confo_variables = {
 
                     ATList = event.message.activeList;
 
+
                     if (event.message && event.message !== null && event.message.activeList && event.message.activeList !== null) {
                         if (ATList.length === 0 && document.querySelectorAll('.remote-view').length > 0) {
                             console.log("ATList length--" + ATList.length);
@@ -127,6 +122,7 @@ var confo_variables = {
                         }
 
                     }
+
                     var div_ATList = [];
                     document.querySelectorAll('.video-inner-copy').forEach((item, index) => {
                         div_ATList[index] = item.getAttribute('id');
@@ -157,8 +153,16 @@ var confo_variables = {
                                     remote_video_item.setAttribute('class', `video-item remote-view remote_view_${parseInt(item)}`);
                                     remote_video_item.style.display = 'block';
 
+                                    var spot_div = document.createElement('div');
+                                    spot_div.setAttribute('class', 'spotlight');
+                                    spot_div.setAttribute('id', `s_${item}`)
+                                    spot_div.setAttribute('style', "position:absolute ;right:0 ;z-index:100 ;");
+                                    spot_div.setAttribute('onclick', 'spotlight(this)');
+                                    spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+                                    remote_video_item.appendChild(spot_div);
+
                                     var remote_video_inner = document.createElement('div');
-                                    remote_video_inner.setAttribute('class', 'video-inner video-inner-copy');
+                                    remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
                                     remote_video_inner.setAttribute('id', item);
                                     var video_caption = document.createElement('div');
                                     video_caption.setAttribute('class', 'video-caption');
@@ -242,42 +246,47 @@ var confo_variables = {
                     //confirm("Audio is muted");
 
                     // confo_variables.isAudioMute = true;
-                    document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'block';
+                    if (room.clientId !== event.clientId) {
+                        document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'block';
+                    }
                 });
 
                 // Notification to others when a user muted audio
                 room.addEventListener("user-audio-unmuted", function (event) {
                     // Handle UI here
                     //  confirm("Audio is unmuted");
-                    document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'none';
-
+                    if (room.clientId !== event.clientId) {
+                        document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'none';
+                    }
                 });
 
                 room.addEventListener("user-video-muted", function (event) {
                     // Handle UI here
                     // confirm("Video is muted");
-                    document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'block';
-
+                    if (room.clientId !== event.clientId) {
+                        document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'block';
+                    }
                 });
 
                 // Notification to others when a user muted video
                 room.addEventListener("user-video-unmuted", function (event) {
                     // Handle UI here
                     //confirm("Video is unmuted");
-                    document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'none';
-                    document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'block';
-                    document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'none';
-
+                    if (room.clientId !== event.clientId) {
+                        document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'none';
+                        document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'block';
+                        document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'none';
+                    }
                 });
 
                 room.addEventListener("user-disconnected", function (event) {
@@ -313,7 +322,7 @@ var confo_variables = {
                         desc.appendChild(message);
                         var time_div = document.createElement('div');
                         time_div.setAttribute('class', 'time');
-                        time_div.setAttribute('style','font-size: smaller');
+                        time_div.setAttribute('style', 'font-size: smaller');
                         time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
                         desc.appendChild(time_div);
                         chat_item.appendChild(desc);
@@ -345,6 +354,11 @@ var confo_variables = {
                         document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
                         shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
                     }
+                });
+
+                room.addEventListener('spotlight-users', function (event) {
+                    // event json { "moderator_id": String, "users": [] }
+                    console.log("event--", event);
                 });
 
                 // Notification to all when share stops
@@ -497,8 +511,8 @@ var confo_variables = {
         );
     },
     chatSendToOthers: function () {
-        var message_to_send = document.querySelector('textarea').value;
-        if (message_to_send !== '') {
+        var message_to_send = document.querySelector('textarea').value.trim();
+        if (message_to_send !== "") {
             var chat_text_area = document.querySelector('.chat-textarea');
             var chat_item = document.createElement('div');
             chat_item.setAttribute('class', 'chat-item right');
@@ -514,17 +528,19 @@ var confo_variables = {
             desc.appendChild(message);
             var time_div = document.createElement('div');
             time_div.setAttribute('class', 'time');
-            time_div.setAttribute('style','font-size: smaller');
+            time_div.setAttribute('style', 'font-size: smaller');
             time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
             desc.appendChild(time_div);
             chat_item.appendChild(desc);
             chat_text_area.appendChild(chat_item);
-            document.querySelector('textarea').value = '';
             room.sendMessage(message_to_send, true, [], function (data) {
                 console.log('Data to send is ---' + JSON.stringify(data));
                 // Message sent
+                document.querySelector('textarea').value = '';
+
             });
         }
+        document.querySelector('textarea').value = '';
     },
     startRecord: function () {
         room.startRecord(function (result, error) {
@@ -591,7 +607,32 @@ var confo_variables = {
         minutes = minutes < 10 ? '0' + minutes : minutes;
         var strTime = hours + ':' + minutes + ' ' + ampm;
         return strTime;
+    },
+    spot_light: function (param) {
+        room.addSpotlightUsers([param.id], function (resp) {
+            // resp json { "result": Number, "clients": [] }
+            console.log("resp", resp);
+            document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+            var scr = document.querySelector('.screen-inner');
+            var r = document.querySelector(`.remote_${param.id} video`);
+            scr.appendChild(r);
+            // document.querySelector('.screen-inner video').setAttribute('style',"height:100% !important; width:100% !important;");
+            console.log("screen-inner", scr);
+            document.querySelector('.spotlight').setAttribute('onlick', 'removeSpotlight(this)');
+        })
+    },
+    spotlightRemove: function (param) {
+        // To remove users from Spotlight
+        room.removeSpotlightUsers([param.id], function (resp) {
+            // resp json { "result": Number, "clientIds": [] }
+            console.log('removeSpotlight---', resp);
+            document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+            var r = document.querySelector(`.screen-inner .remote_${param.id} video`);
+            // var 
+        })
+
     }
+
 
 
 }
@@ -721,4 +762,12 @@ function switchcam(_this) {
 
 function switchmic(_this) {
     confo_variables.microphoneSwitch(_this);
+}
+
+function spotlight(_this) {
+    confo_variables.spot_light(_this);
+}
+
+function removeSpotlight(_this) {
+    confo_variables.spotlightRemove(_this);
 }

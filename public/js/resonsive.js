@@ -50,6 +50,12 @@ document.querySelector(".settings-area").addEventListener("click", function (b) 
     b.stopPropagation();
 });
 
+document.querySelector('textarea').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        chatSend();
+    }
+});
+
 // document.querySelector(".cm-screen-share a").addEventListener("click", function () {
 //     document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
 // });
