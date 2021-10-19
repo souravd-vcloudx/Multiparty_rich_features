@@ -154,8 +154,8 @@ var confo_variables = {
                                     remote_video_item.style.display = 'block';
 
                                     var spot_div = document.createElement('div');
-                                    spot_div.setAttribute('class', 'spotlight');
-                                    spot_div.setAttribute('id', `s_${item}`)
+                                    spot_div.setAttribute('class', `spotlight`);
+                                    spot_div.setAttribute('id', `s_${item}`);
                                     spot_div.setAttribute('style', "position:absolute ;right:0 ;z-index:100 ;");
                                     spot_div.setAttribute('onclick', 'spotlight(this)');
                                     spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
@@ -163,7 +163,7 @@ var confo_variables = {
 
                                     var remote_video_inner = document.createElement('div');
                                     remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    remote_video_inner.setAttribute('id', item);
+                                    remote_video_inner.setAttribute('id', `${item}`);
                                     var video_caption = document.createElement('div');
                                     video_caption.setAttribute('class', 'video-caption');
                                     var remote_name_p = document.createElement('p');
@@ -195,7 +195,7 @@ var confo_variables = {
                                     remote_video_item.appendChild(video_caption);
                                     document.querySelector('.row-fluid').appendChild(remote_video_item);
                                     console.log("Append ho gaya sab kuch ==========");
-                                    st.play(item, confo_variables.PlayerOpt);
+                                    st.play(`${item}`, confo_variables.PlayerOpt);
                                 }
                             }
                         });
@@ -609,25 +609,31 @@ var confo_variables = {
         return strTime;
     },
     spot_light: function (param) {
-        room.addSpotlightUsers([param.id], function (resp) {
+        var str_id = param.id.replace('s_','');
+        room.addSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
             // resp json { "result": Number, "clients": [] }
             console.log("resp", resp);
             document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
             var scr = document.querySelector('.screen-inner');
-            var r = document.querySelector(`.remote_${param.id} video`);
+            var r = document.querySelector(`.remote_view_${parseInt(str_id)}`);
             scr.appendChild(r);
             // document.querySelector('.screen-inner video').setAttribute('style',"height:100% !important; width:100% !important;");
             console.log("screen-inner", scr);
-            document.querySelector('.spotlight').setAttribute('onlick', 'removeSpotlight(this)');
+            document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
         })
     },
     spotlightRemove: function (param) {
         // To remove users from Spotlight
-        room.removeSpotlightUsers([param.id], function (resp) {
+        var str_id = param.id.replace('s_','');
+        room.removeSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
             // resp json { "result": Number, "clientIds": [] }
             console.log('removeSpotlight---', resp);
             document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-            var r = document.querySelector(`.screen-inner .remote_${param.id} video`);
+            var r = document.querySelector(`.remote_view_${parseInt(str_id)}`);
+            var fluid = document.querySelector('.row-fluid');
+            document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
+            fluid.appendChild(r);
+
             // var 
         })
 
