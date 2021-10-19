@@ -918,6 +918,32 @@ body.custom-multi-app-page {
     margin: 0;
 }
 
+.close-icon {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    width: 25px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.close-icon span {
+    width: calc(100% - 10px);
+    height: 2px;
+    background: #f00;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+.close-icon span:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.close-icon span:nth-child(2) {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 /*media queries*/
 
 @media (max-width: 991px) {
@@ -1209,5 +1235,38 @@ body.custom-multi-app-page {
     .custom-multi-app-page .room-name {
         position: static;
         padding-bottom: 10px;
+    }
+
+    .custom-multi-app-page .room-name {
+        padding-left: 20px;
+    }
+    
+    .screen-open.spotlight-open .screen-area .screen-inner {
+        padding-bottom: 0;
+    }
+    
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1 .video-item, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom2 .video-item,
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom3 .video-item, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom4 .video-item, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom5 .video-item, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom6 .video-item {
+        width: auto !important;
+    }
+    
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1 .video-item .video-inner, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom2 .video-item .video-inner, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom3 .video-item .video-inner, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom4 .video-item .video-inner, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom5 .video-item .video-inner, 
+    .custom-multi-app-page .screen-open.spotlight-open .video-area .row-fluid.custom1.custom6 .video-item .video-inner {
+        padding: 0 !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .screen-open.spotlight-open .video-inner-copy video {
+        width:200px !important;
+        height: auto !important;
     }
 }
