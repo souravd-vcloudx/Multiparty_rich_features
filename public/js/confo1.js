@@ -134,6 +134,7 @@ var confo_variables = {
                         if (item.clientId === confo_variables.isSpotLightUser && item.spotlight === false) {
                             if (room.clientId !== item.clientId) {
                                 document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
                                 var r = document.querySelector(`.remote_view_${item.streamId}`);
                                 var fluid = document.querySelector('.row-fluid');
                                 document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
@@ -145,6 +146,7 @@ var confo_variables = {
                             confo_variables.isSpotLightUser = item.clientId;
                             if (room.clientId !== item.clientId) {
                                 document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
                                 var scr = document.querySelector('.screen-inner');
                                 var r = document.querySelector(`.remote_view_${item.streamId}`);
                                 scr.appendChild(r);
