@@ -378,15 +378,28 @@ body.custom-multi-app-page {
     border-radius: 5px;
 }
 
-.custom-multi-app-page .chat-textarea .chat-item p {
+.custom-multi-app-page .chat-textarea .left p {
+    margin: 0;
+    text-align: left;
+}
+
+.custom-multi-app-page .chat-textarea .right p {
     margin: 0;
     text-align: right;
 }
 
-.custom-multi-app-page .chat-textarea .chat-item .head p {
+.custom-multi-app-page .chat-textarea .left .head p {
     font-weight: 600;
     font-size: 13px;
     line-height: normal;
+    text-align: left;
+}
+
+.custom-multi-app-page .chat-textarea .right .head p {
+    font-weight: 600;
+    font-size: 13px;
+    line-height: normal;
+    text-align: right;
 }
 
 .custom-multi-app-page .chat-textarea .chat-item .img {
@@ -526,6 +539,7 @@ body.custom-multi-app-page {
     bottom: 20px;
     opacity: 0;
     visibility: hidden;
+    z-index: 1000;
 }
 
 .custom-multi-app-page .video-area .row-fluid .call-disconnect span {
@@ -869,8 +883,13 @@ body.custom-multi-app-page {
 }
 
 .spotlight {
-    right: 20px !important;
-    top: 20px !important;
+    right: 5% !important;
+    top: 5% !important;
+    color: black !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+    height: 25px !important;
+    cursor: pointer;
 }
 
 .video-inner-copy {

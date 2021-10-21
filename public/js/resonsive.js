@@ -2,6 +2,9 @@ document.querySelector(".chat-btn a").addEventListener("click", function (e) {
     e.stopPropagation();
     document.querySelector('.custom-app-wrapper').classList.remove('settings-open');
     document.querySelector('.custom-app-wrapper').classList.remove('participant-open');
+    document.querySelector('#black_chat').style.display = 'block';
+    document.querySelector('#red_chat').style.display = 'none';
+    confo_variables.isChatViewOpen ? (confo_variables.isChatViewOpen = false) : (confo_variables.isChatViewOpen = true);
     document.querySelector('.custom-app-wrapper').classList.toggle('chat-bar-open');
 });
 
@@ -13,26 +16,28 @@ document.querySelector(".chat-area").addEventListener("click", function (a) {
     a.stopPropagation();
 });
 
-document.querySelector('textarea').addEventListener('click', () => {
-    document.querySelector('#black_chat').style.display = 'block';
-    document.querySelector('#red_chat').style.display = 'none';
-});
+// document.querySelector('textarea').addEventListener('click', () => {
+//     document.querySelector('#black_chat').style.display = 'block';
+//     document.querySelector('#red_chat').style.display = 'none';
+// });
 
 document.querySelector(".recording-tools ul li.menu-icon").addEventListener("click", function () {
     document.querySelector('.custom-app-wrapper').classList.toggle('menu-open');
 });
 
 document.querySelector(".custom-multi-app-page .left-icons-tools ul li.participant-btn").addEventListener("click", function (e1) {
-    e1.stopPropagation();  
+    e1.stopPropagation();
     document.querySelector('.custom-app-wrapper').classList.remove('settings-open');
     document.querySelector('.custom-app-wrapper').classList.remove('chat-bar-open');
+    confo_variables.isChatViewOpen = false;
     document.querySelector('.custom-app-wrapper').classList.toggle('participant-open');
 });
 
 document.querySelector(".custom-multi-app-page .left-icons-tools ul li.settings-btn").addEventListener("click", function (e1) {
-    e1.stopPropagation();  
+    e1.stopPropagation();
     document.querySelector('.custom-app-wrapper').classList.remove('participant-open');
     document.querySelector('.custom-app-wrapper').classList.remove('chat-bar-open');
+    confo_variables.isChatViewOpen = false;
     document.querySelector('.custom-app-wrapper').classList.toggle('settings-open');
 });
 
@@ -40,7 +45,7 @@ document.querySelector("body").addEventListener("click", function (ele) {
     document.querySelector('.custom-app-wrapper').classList.remove('participant-open');
     document.querySelector('.custom-app-wrapper').classList.remove('chat-bar-open');
     document.querySelector('.custom-app-wrapper').classList.remove('settings-open');
-
+    confo_variables.isChatViewOpen = false;
 });
 
 document.querySelector(".participants-area").addEventListener("click", function (b) {
@@ -55,6 +60,13 @@ document.querySelector('textarea').addEventListener('keydown', (e) => {
         chatSend();
     }
 });
+
+function closeArea() {
+    confo_variables.isChatViewOpen = false;
+    document.querySelector('.custom-app-wrapper').classList.remove('participant-open');
+    document.querySelector('.custom-app-wrapper').classList.remove('chat-bar-open');
+    document.querySelector('.custom-app-wrapper').classList.remove('settings-open');
+}
 
 // document.querySelector(".cm-screen-share a").addEventListener("click", function () {
 //     document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');

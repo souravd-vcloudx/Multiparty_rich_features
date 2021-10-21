@@ -8,12 +8,15 @@ var confo_variables = {
     token: '',
     video_type: 'SD',
     isSpotLightUser: '',
+    isSpotLightUserStreamId: '',
+    isSpotLight: false,
     isAudioMute: false,
     isVideoMute: false,
     isRedchat: false,
     isChatViewOpen: false,
     isRecording: false,
     isLock: false,
+    isShare: false,
     streamShare: null,
     VideoSize: {
         'HD': [320, 180, 1280, 720],
@@ -49,6 +52,9 @@ var confo_variables = {
                 // Look for error.type and error.msg.name to handle Exception
                 if (error.type == "media-access-denied") {
                     // Media Media Inaccessibility
+                } else if (error.error === 4122) {
+                    toastr.options.positionClass = 'toast-bottom-right';
+                    toastr.error('Room is locked');
                 }
             }
             if (success && success !== null) {
@@ -104,20 +110,10 @@ var confo_variables = {
                             console.log("ATList length--" + ATList.length);
                             document.querySelector('.remote-view').remove();
                         }
-                        // if (ATList.length === 0 && document.querySelectorAll('.remote-view').length === 0) {
-                        //     let len = document.querySelectorAll('.custom-multi-app-page .video-area .video-item').length - 1;
-                        //     console.log("len---" + len);
-                        //     if (confo_variables.previousToggleClass !== '') {
-                        //         document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.replace(confo_variables.previousToggleClass, 'custom1');
-                        //         console.log("if previousToggleClass---" + confo_variables.previousToggleClass);
-                        //     }
-                        //     else {
-                        //         document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.toggle('custom1');
-                        //         console.log("else previousToggleClass---" + confo_variables.previousToggleClass);
-                        //     }
-                        //     confo_variables.previousToggleClass = 'custom1';
-                        //     return;
-                        // }
+                        if (ATList.length === 0 && document.querySelectorAll('.remote-view').length === 0) {
+                            document.querySelector('.custom-multi-app-page .video-area .row-fluid').setAttribute('class', 'row-fluid custom1');
+                            return;
+                        }
                         if (ATList.length == video_player_len.length) {
                             return;
                         }
@@ -132,26 +128,76 @@ var confo_variables = {
                     var ATList_id = [];
                     ATList.forEach((item, index) => {
                         if (item.clientId === confo_variables.isSpotLightUser && item.spotlight === false) {
-                            if (room.clientId !== item.clientId) {
-                                document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-                                document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
-                                var r = document.querySelector(`.remote_view_${item.streamId}`);
-                                var fluid = document.querySelector('.row-fluid');
+                            if (confo_variables.isShare === true) {
+                                if (room.me.role === 'moderator') {
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                    var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                    var fluid = document.querySelector('.row-fluid');
+                                    document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
+                                    fluid.appendChild(r);
+                                }
                                 document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
-                                fluid.appendChild(r);
                                 confo_variables.isSpotLightUser = '';
+                                confo_variables.isSpotLightUserStreamId = '';
+                                confo_variables.isSpotLight = false;
+                            }
+                            else {
+                                if (room.clientId !== item.clientId) {
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                    var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                    var fluid = document.querySelector('.row-fluid');
+                                    document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
+                                    fluid.appendChild(r);
+                                    confo_variables.isSpotLightUser = '';
+                                    confo_variables.isSpotLightUserStreamId = '';
+                                    confo_variables.isSpotLight = false;
+                                }
                             }
                         }
                         if (item.spotlight === true) {
-                            confo_variables.isSpotLightUser = item.clientId;
-                            if (room.clientId !== item.clientId) {
-                                document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-                                document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
-                                var scr = document.querySelector('.screen-inner');
-                                var r = document.querySelector(`.remote_view_${item.streamId}`);
-                                scr.appendChild(r);
-                                console.log("screen-inner", scr);
-                                document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
+                            if (confo_variables.isShare === true) {
+                                confo_variables.isSpotLightUser = item.clientId;
+                                confo_variables.isSpotLightUserStreamId = item.streamId;
+                                confo_variables.isSpotLight = true;
+
+                                if (room.me.role === 'moderator') {
+                                    document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'removeSpotlight(this)');
+                                }
+
+                                if (room.clientId !== item.clientId && room.me.role !== 'moderator') {
+                                    // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    // document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
+                                    // var scr = document.querySelector('.screen-inner');
+                                    // var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                    // scr.appendChild(r);
+                                    // console.log("screen-inner", scr);
+                                    // document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
+                                }
+                            }
+                            else {
+                                confo_variables.isSpotLightUser = item.clientId;
+                                confo_variables.isSpotLightUserStreamId = item.streamId;
+                                confo_variables.isSpotLight = true;
+                                if (room.me.role === 'moderator') {
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
+                                    var scr = document.querySelector('.screen-inner');
+                                    var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                    scr.appendChild(r);
+                                    console.log("screen-inner", scr);
+                                    document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
+                                }
+                                else if (room.clientId !== item.clientId && room.me.role !== 'moderator') {
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
+                                    var scr = document.querySelector('.screen-inner');
+                                    var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                    scr.appendChild(r);
+                                    console.log("screen-inner", scr);
+                                    document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
+                                }
                             }
                         }
                         ATList_id[index] = `${ATList[index].streamId}`;
@@ -162,96 +208,69 @@ var confo_variables = {
 
                     console.log("difference==========", difference);
 
-                    if (confo_variables.isLock === false)
+                    difference.forEach((item, index) => {
+                        if (ATList_id.indexOf(item) === -1) {
+                            console.log('NIkaal diya');
+                            document.querySelector(`.remote_view_${item}`).remove();
+                        }
+                        else {
+                            const st = room.remoteStreams.get(parseInt(item));
+                            if (!st.local) {
+                                // confo_variables.activeTlakerUI(st, item);
+                                var remote_video_item = document.createElement('div');
+                                remote_video_item.setAttribute('class', `video-item remote-view remote_view_${parseInt(item)}`);
+                                remote_video_item.style.display = 'block';
 
-                        difference.forEach((item, index) => {
-                            if (ATList_id.indexOf(item) === -1) {
-                                console.log('NIkaal diya');
-                                document.querySelector(`.remote_view_${item}`).remove();
-                            }
-                            else {
-                                const st = room.remoteStreams.get(parseInt(item));
-                                if (!st.local) {
-                                    // confo_variables.activeTlakerUI(st, item);
-                                    var remote_video_item = document.createElement('div');
-                                    remote_video_item.setAttribute('class', `video-item remote-view remote_view_${parseInt(item)}`);
-                                    remote_video_item.style.display = 'block';
-
-                                    if(isModerator){
-                                        var spot_div = document.createElement('div');
-                                        spot_div.setAttribute('class', `spotlight`);
-                                        spot_div.setAttribute('id', `s_${item}`);
-                                        spot_div.setAttribute('style', "position:absolute ;right:0 ;z-index:100 ;");
-                                        spot_div.setAttribute('onclick', 'spotlight(this)');
-                                        spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-                                        remote_video_item.appendChild(spot_div);
-                                    }
-
-                                    var remote_video_inner = document.createElement('div');
-                                    remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    remote_video_inner.setAttribute('id', `${item}`);
-                                    var video_caption = document.createElement('div');
-                                    video_caption.setAttribute('class', 'video-caption');
-                                    var remote_name_p = document.createElement('p');
-                                    remote_name_p.innerHTML = `${room.activeTalkerList.get(parseInt(item)).name}`;
-                                    console.log("name is --=--", room.activeTalkerList.get(parseInt(item)).name);
-                                    video_caption.appendChild(remote_name_p);
-
-                                    var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
-                                    small_unmute_audio.setAttribute('id', `unmute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
-
-                                    var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
-                                    small_mute_audio.setAttribute('id', `mute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
-
-                                    var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
-                                    small_unmute_video.setAttribute('id', `unmute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
-
-                                    var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
-                                    small_mute_video.setAttribute('id', `mute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
-                                    small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
-
-                                    video_caption.appendChild(small_unmute_audio);
-                                    video_caption.appendChild(small_mute_audio);
-                                    video_caption.appendChild(small_unmute_video);
-                                    video_caption.appendChild(small_mute_video);
-                                    remote_video_item.appendChild(remote_video_inner);
-                                    remote_video_item.appendChild(video_caption);
-                                    document.querySelector('.row-fluid').appendChild(remote_video_item);
-                                    console.log("Append ho gaya sab kuch ==========");
-                                    st.play(`${item}`, confo_variables.PlayerOpt);
+                                if (isModerator) {
+                                    var spot_div = document.createElement('div');
+                                    spot_div.setAttribute('class', `spotlight`);
+                                    spot_div.setAttribute('id', `s_${item}`);
+                                    spot_div.setAttribute('style', "position:absolute ;right:0 ;z-index:100 ;");
+                                    spot_div.setAttribute('onclick', 'spotlight(this)');
+                                    spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+                                    remote_video_item.appendChild(spot_div);
                                 }
+
+                                var remote_video_inner = document.createElement('div');
+                                remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                remote_video_inner.setAttribute('id', `${item}`);
+                                var video_caption = document.createElement('div');
+                                video_caption.setAttribute('class', 'video-caption');
+                                var remote_name_p = document.createElement('p');
+                                remote_name_p.innerHTML = `${room.activeTalkerList.get(parseInt(item)).name}`;
+                                console.log("name is --=--", room.activeTalkerList.get(parseInt(item)).name);
+                                video_caption.appendChild(remote_name_p);
+
+                                var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
+                                small_unmute_audio.setAttribute('id', `unmute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                                var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
+                                small_mute_audio.setAttribute('id', `mute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                                var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
+                                small_unmute_video.setAttribute('id', `unmute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                                var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
+                                small_mute_video.setAttribute('id', `mute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+
+
+                                video_caption.appendChild(small_unmute_audio);
+                                video_caption.appendChild(small_mute_audio);
+                                video_caption.appendChild(small_unmute_video);
+                                video_caption.appendChild(small_mute_video);
+                                remote_video_item.appendChild(remote_video_inner);
+                                remote_video_item.appendChild(video_caption);
+                                document.querySelector('.row-fluid').appendChild(remote_video_item);
+                                console.log("Append ho gaya sab kuch ==========");
+                                st.play(`${item}`, confo_variables.PlayerOpt);
                             }
-                        });
-
-                    // for (var i = 0; i < ATList.length; i++) {
-                    //     if (ATList[i] && ATList[i].streamId) {
-                    //         var stream = room.remoteStreams.get(ATList[i].streamId);
-                    //         var stream_id = ATList[i].streamId;
-
-                    //         var username = ATList[i].name;
-                    //         var remote_view_parent = document.querySelector('.remote-view-parent');
-                    //         var clone_remote_view_parent = remote_view_parent.cloneNode();
-                    //         clone_remote_view_parent.style.display = 'block';
-                    //         clone_remote_view_parent.classList.remove('remote-view-parent');
-                    //         clone_remote_view_parent.classList.add('remote-view');
-                    //         var clone_video_inner = document.querySelector('.video-inner-parent').cloneNode();
-                    //         clone_video_inner.classList.remove('video-inner-parent');
-                    //         clone_video_inner.classList.add('video-inner-copy');
-                    //         clone_video_inner.setAttribute('id', `${stream_id}`);
-                    //         // var target_remote = clone.firstChild;
-                    //         // target_remote.id = `remote_view_${stream_id}`;
-                    //         // clone.id = `remote_view_${stream_id}`;
-                    //         clone_remote_view_parent.appendChild(clone_video_inner);
-                    //         document.querySelector('.row-fluid').appendChild(clone_remote_view_parent);
-                    //         console.log("Append ho gaya sab kuch ==========");
-                    //         localStream.play(`${stream_id}`, confo_variables.PlayerOpt);
-                    //     }
-
-                    // }
-
+                        }
+                    });
+                    // confo_variables.updateSmallIcons();
                     let len = document.querySelectorAll('.custom-multi-app-page .video-area .video-item').length - 1;
                     console.log("len---" + len);
                     if (confo_variables.previousToggleClass !== '') {
@@ -264,20 +283,18 @@ var confo_variables = {
                     }
                     confo_variables.previousToggleClass = 'custom' + len;
                     console.log("outside previousToggleClass---" + confo_variables.previousToggleClass);
+                    confo_variables.updateSmallIcons();
+
                 });
 
                 // Notification to others when a user muted audio
                 room.addEventListener("user-audio-muted", function (event) {
                     // Handle UI here
                     //confirm("Audio is muted");
-
-                    // confo_variables.isAudioMute = true;
                     if (room.clientId !== event.clientId) {
-                        document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'block';
+                        confo_variables.updateUsersList();
                     }
+                    // confo_variables.updateSmallIcons();
                 });
 
                 // Notification to others when a user muted audio
@@ -285,22 +302,18 @@ var confo_variables = {
                     // Handle UI here
                     //  confirm("Audio is unmuted");
                     if (room.clientId !== event.clientId) {
-                        document.querySelector(`#unmute-audio-small-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#mute-audio-small-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#unmute-audio-list-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#mute-audio-list-${event.clientId}`).style.display = 'none';
+                        confo_variables.updateUsersList();
                     }
+                    // confo_variables.updateSmallIcons();
                 });
 
                 room.addEventListener("user-video-muted", function (event) {
                     // Handle UI here
                     // confirm("Video is muted");
                     if (room.clientId !== event.clientId) {
-                        document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'block';
+                        confo_variables.updateUsersList();
                     }
+                    // confo_variables.updateSmallIcons();
                 });
 
                 // Notification to others when a user muted video
@@ -308,11 +321,9 @@ var confo_variables = {
                     // Handle UI here
                     //confirm("Video is unmuted");
                     if (room.clientId !== event.clientId) {
-                        document.querySelector(`#unmute-video-small-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#mute-video-small-${event.clientId}`).style.display = 'none';
-                        document.querySelector(`#unmute-video-list-${event.clientId}`).style.display = 'block';
-                        document.querySelector(`#mute-video-list-${event.clientId}`).style.display = 'none';
+                        confo_variables.updateUsersList();
                     }
+                    // confo_variables.updateSmallIcons();
                 });
 
                 room.addEventListener("user-disconnected", function (event) {
@@ -320,12 +331,14 @@ var confo_variables = {
                     // event - User Information of disconnected user
                     console.log("User-Disconnected---" + event);
                     confo_variables.updateUsersList();
+                    // confo_variables.updateSmallIcons();
                 });
 
 
                 room.addEventListener('user-connected', (data) => {
                     // console.log(data);
                     confo_variables.updateUsersList();
+                    // confo_variables.updateSmallIcons();
                 });
 
                 // To receive message notification 
@@ -353,9 +366,16 @@ var confo_variables = {
                         desc.appendChild(time_div);
                         chat_item.appendChild(desc);
                         chat_text_area.appendChild(chat_item);
-                        document.querySelector('#black_chat').style.display = 'none';
-                        document.querySelector('#red_chat').style.display = 'block';
-                        confo_variables.isRedchat = true;
+                        if (confo_variables.isChatViewOpen === false) {
+                            document.querySelector('#black_chat').style.display = 'none';
+                            document.querySelector('#red_chat').style.display = 'block';
+                            confo_variables.isRedchat = true;
+                        }
+                        else {
+                            document.querySelector('#black_chat').style.display = 'block';
+                            document.querySelector('#red_chat').style.display = 'none';
+                            confo_variables.isRedchat = false;
+                        }
 
                     }
                     else {
@@ -365,20 +385,46 @@ var confo_variables = {
 
                 room.addEventListener('room-locked', function (event) {
                     confo_variables.isLock = true;
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Room is Locked');
                 });
 
                 room.addEventListener('room-unlocked', function (event) {
                     confo_variables.isLock = false;
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Room is Unlocked');
                 });
 
                 // Notification to all when share starts
                 room.addEventListener("share-started", function (event) {
                     // Get Stream# 101 which carries Screen Share 
+
                     if (room.clientId !== event.message.clientId) {
-                        console.log("share-started event----" + JSON.stringify(event));
-                        var shared_stream = room.remoteStreams.get(101);
-                        document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-                        shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+
+                        confo_variables.isShare = true;
+                    }
+                    if (confo_variables.isSpotLight === true) {
+                        if (room.clientId !== event.message.clientId) {
+                            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                            if (room.clientId !== confo_variables.isSpotLightUser) {
+                                var r = document.querySelector(`.screen-inner .remote-view`);
+                                var fluid = document.querySelector('.row-fluid');
+                                fluid.appendChild(r);
+                            }
+                            var shared_stream = room.remoteStreams.get(101);
+                            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+                        }
+
+                    }
+                    else {
+                        if (room.clientId !== event.message.clientId) {
+                            console.log("share-started event----" + JSON.stringify(event));
+                            var shared_stream = room.remoteStreams.get(101);
+                            document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+                        }
                     }
                 });
 
@@ -390,12 +436,37 @@ var confo_variables = {
                 // Notification to all when share stops
                 room.addEventListener("share-stopped", function (event) {
                     // Handle UI here
-                    if (room.clientId !== event.message.clientId) {
-                        document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-                        document.querySelector('#player_101').remove();
-                        document.querySelector('.screen-inner').setAttribute('style', '');
-                    }
 
+                    if (confo_variables.isSpotLight === true) {
+                        if (room.clientId === confo_variables.isSpotLightUser) {
+                            document.querySelector('#player_101').remove();
+                            document.querySelector('.screen-inner').setAttribute('style', '');
+                            document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                        }
+                        else if (room.clientId !== event.message.clientId && room.clientId !== confo_variables.isSpotLightUser) {
+                            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            document.querySelector('#player_101').remove();
+                            document.querySelector('.screen-inner').setAttribute('style', '');
+                            document.querySelector('.custom-app-wrapper').classList.toggle('spotlight-open');
+                            var scr = document.querySelector('.screen-inner');
+                            var r = document.querySelector(`.remote_view_${parseInt(confo_variables.isSpotLightUserStreamId)}`);
+                            scr.appendChild(r);
+                            console.log("screen-inner", scr);
+                            // document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
+                        }
+
+                    }
+                    else {
+                        if (room.clientId !== event.message.clientId) {
+                            document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                            document.querySelector('#player_101').remove();
+                            document.querySelector('.screen-inner').setAttribute('style', '');
+                        }
+                    }
+                    if (room.clientId !== event.message.clientId) {
+                        confo_variables.isShare = false;
+                    }
                 });
 
                 // Notification recording started to all
@@ -404,6 +475,8 @@ var confo_variables = {
                     // event.message.moderatorId = Moderator who stated recording.
                     confo_variables.isRecording = true;
                     document.querySelector('.recording-blink').style.visibility = 'visible';
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Recording is on');
                 });
 
                 // Notification recording stopped to all
@@ -412,6 +485,8 @@ var confo_variables = {
                     // event.message.moderatorId = Moderator who stopped recording. 
                     confo_variables.isRecording = false;
                     document.querySelector('.recording-blink').style.visibility = 'hidden';
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Recording is off');
                 });
 
 
@@ -456,33 +531,34 @@ var confo_variables = {
             navigator.userAgent.indexOf("QQBrowser") > -1 &&
             room.Connection.getBrowserVersion() < 72
         ) {
+            toastr.options.positionClass = 'toast-bottom-right';
             toastr.error(language.ss_unsupport_qq);
             return;
         } else if (
             navigator.userAgent.indexOf("Chrome") > -1 &&
             room.Connection.getBrowserVersion() < 72
         ) {
+            toastr.options.positionClass = 'toast-bottom-right';
             toastr.error(language.ss_unsupport_chrome_below72);
             return;
         }
         this.streamShare = room.startScreenShare(function (result) {
-
+            // confo_variables.isShare = true;
+            document.querySelector('.cm-screen-share').setAttribute('onclick', 'stopScreenShare()');
         });
         this.streamShare.addEventListener("stream-ended", function () {
             room.stopScreenShare(this.streamShare, function (result) {
-
             });
             document.querySelector('.cm-screen-share').setAttribute('onclick', 'screenShare()');
+            // confo_variables.isShare = false;
         })
         console.log('streamShare-----' + JSON.stringify(this.streamShare));
     },
     stopShareScreen: function () {
         // Stop the Shared Screen
         room.stopScreenShare(this.streamShare, function (result) {
+            // confo_variables.isShare = false;
         });
-    },
-    callDisconnect: function () {
-        room.disconnect();
     },
     updateUsersList: function () {
         var list = '';
@@ -502,21 +578,52 @@ var confo_variables = {
                 list = `<div class="head" id="user_${clientId}"><p>${user.name}</p></div>`;
                 part_desc.innerHTML = list;
 
+
                 var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
-                small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
-                small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
-
                 var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
-                small_mute_audio.setAttribute('id', `mute-audio-list-${clientId}`);
-                small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
-
                 var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
-                small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
-                small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
-
                 var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
-                small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
-                small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+                if (user.audioMuted === true) {
+                    small_unmute_audio.style.display = 'none';
+                    small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
+                    small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                    small_mute_audio.style.display = 'block';
+                    small_mute_audio.setAttribute('id', `mute-audio-list-${clientId}`);
+                    small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                }
+                else {
+                    small_unmute_audio.style.display = 'block';
+                    small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
+                    small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+
+                    small_mute_audio.style.display = 'none';
+                    small_mute_audio.setAttribute('id', `mute-audio-list-${clientId}`);
+                    small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                }
+                if (user.videoMuted === true) {
+                    small_unmute_video.style.display = 'none';
+                    small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
+                    small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                    small_mute_video.style.display = 'block';
+                    small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
+                    small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+
+                }
+                else {
+                    small_unmute_video.style.display = 'block';
+                    small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
+                    small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                    small_mute_video.style.display = 'none';
+                    small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
+                    small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+
+                }
 
 
                 part_item.appendChild(part_desc);
@@ -612,6 +719,8 @@ var confo_variables = {
             }
             else {
                 // Failed to switch
+                toastr.options.positionClass = 'toast-bottom-right';
+                toastr.error("Couldn't get a stream");
             }
         });
     },
@@ -621,6 +730,8 @@ var confo_variables = {
                 localStream = Stream; // LocalStream updated   
             }
             else {
+                toastr.options.positionClass = 'toast-bottom-right';
+                toastr.error("Couldn't get a stream");
             }
         });
     },
@@ -639,31 +750,52 @@ var confo_variables = {
         room.addSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
             // resp json { "result": Number, "clients": [] }
             console.log("resp", resp);
-            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-            // var scr = document.querySelector('.screen-inner');
-            // var r = document.querySelector(`.remote_view_${parseInt(str_id)}`);
-            // scr.appendChild(r);
-            // document.querySelector('.screen-inner video').setAttribute('style',"height:100% !important; width:100% !important;");
-            // console.log("screen-inner", scr);
-            // document.querySelector('.spotlight').setAttribute('onclick', 'removeSpotlight(this)');
         })
     },
     spotlightRemove: function (param) {
         // To remove users from Spotlight
         var str_id = param.id.replace('s_', '');
         room.removeSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
-            // resp json { "result": Number, "clientIds": [] }
-            // console.log('removeSpotlight---', resp);
-            // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
-            // var r = document.querySelector(`.remote_view_${parseInt(str_id)}`);
-            // var fluid = document.querySelector('.row-fluid');
-            // document.querySelector('.spotlight').setAttribute('onclick', 'spotlight(this)');
-            // fluid.appendChild(r);
 
-            // var 
         })
+    },
+    updateSmallIcons: function () {
+        room.activeTalkerList.forEach((item, index) => {
+            try {
+                if (item.mediatype === 'audio') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'block';
+                }
+                else if (item.mediatype === 'audiovideo') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'none';
+                }
+                else if (item.mediatype === 'video') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'none';
+                }
+                else if (item.mediatype === 'none') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'block';
 
-    }
+                }
+
+            } catch (error) {
+
+            }
+        })
+    },
+    callDisconnect: function () {
+        room.disconnect();
+    },
 
 
 
@@ -691,7 +823,8 @@ EnxRtc.getDevices(function (arg) {
         camera_desc.innerHTML = camlist;
         microphone_desc.innerHTML = miclist;
     } else if (arg.result === 1145) {
-        // toastr.error("Your media devices might be in use with some other application.");
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.error("Your media devices might be in use with some other application.");
         // $(".error_div").html(
         //     "Your media devices might be in use with some other application."
         // );
@@ -736,8 +869,13 @@ function disconnectCall() {
 }
 
 function screenShare() {
+    // if (confo_variables.isSpotLight === true) {
+    //     toastr.options.positionClass = 'toast-top-right';
+    //     toastr.info('Spotlight is on');
+    // }
+    // else {
     confo_variables.shareScreen();
-    document.querySelector('.cm-screen-share').setAttribute('onclick', 'stopScreenShare()');
+    // }
 }
 
 function stopScreenShare() {
@@ -797,9 +935,17 @@ function switchmic(_this) {
 }
 
 function spotlight(_this) {
-    confo_variables.spot_light(_this);
+    if (confo_variables.isSpotLight === false) {
+        confo_variables.spot_light(_this);
+    }
+    else {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.error('Another participant is spotlight');
+    }
 }
 
 function removeSpotlight(_this) {
-    confo_variables.spotlightRemove(_this);
+    if (confo_variables.isSpotLight === true) {
+        confo_variables.spotlightRemove(_this);
+    }
 }
