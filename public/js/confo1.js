@@ -130,7 +130,7 @@ var confo_variables = {
                         if (item.clientId === confo_variables.isSpotLightUser && item.spotlight === false) {
                             if (confo_variables.isShare === true) {
                                 if (room.me.role === 'moderator') {
-                                    document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
+                                    // document.querySelector('.custom-app-wrapper').classList.toggle('screen-open');
                                     document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
                                     var r = document.querySelector(`.remote_view_${item.streamId}`);
                                     var fluid = document.querySelector('.row-fluid');
@@ -717,6 +717,9 @@ var confo_variables = {
             if (Stream && Stream.getID) {
                 localStream = Stream; // LocalStream updated   
             }
+            else if (Stream.message === 'success') {
+
+            }
             else {
                 // Failed to switch
                 toastr.options.positionClass = 'toast-bottom-right';
@@ -728,6 +731,9 @@ var confo_variables = {
         localStream.switchMicrophone(localStream, _this.id, function (Stream) {
             if (Stream && Stream.getID) {
                 localStream = Stream; // LocalStream updated   
+            }
+            else if (Stream.message === 'success') {
+
             }
             else {
                 toastr.options.positionClass = 'toast-bottom-right';
