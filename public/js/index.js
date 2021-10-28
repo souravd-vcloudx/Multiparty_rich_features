@@ -18,6 +18,57 @@ window.onload = function () {
 var username = "demo";
 var password = "enablex";
 
+EnxRtc.getDevices(function (arg) {
+    let camlist = '';
+    let miclist = '';
+    if (arg.result === 0) {
+        arg.devices.cam.forEach(element => {
+            var camId = element.deviceId.toString();
+            if (element.deviceId !== '') {
+                camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            }
+        });
+
+        arg.devices.mic.forEach(element => {
+            var micId = element.deviceId.toString();
+            if (element.deviceId !== '') {
+                miclist += `<input type="radio" id="${element.deviceId}" name="mic" value="${element.label}" onclick="switchmic(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            }
+        });
+
+        if (camlist === '') {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.options.timout = '10000000';
+            toastr.error("Camera not found");
+            document.querySelector('.btn').disabled = true;
+            return false;
+        }
+        if (miclist === '') {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.options.timout = '10000000';
+            toastr.error("Mic not found");
+            document.querySelector('.btn').disabled = true;
+            return false;
+        }
+
+    } else if (arg.result === 1145) {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.options.timout = '10000000';
+        toastr.error("Your media devices might be in use with some other application.");
+        // $(".error_div").html(
+        //     "Your media devices might be in use with some other application."
+        // );
+        // $(".error_div").show();
+        document.querySelect('.btn').disabled = true;
+        return false;
+    } else {
+        $(".error_div").show();
+        // toastr.options.timout = '10000000';
+        document.querySelector('.btn').disabled = true;
+
+        return false;
+    }
+});
 
 
 // Verifies login credentials before moving to Conference page
@@ -28,64 +79,12 @@ document.getElementById('joinRoom').addEventListener('click', function (event) {
     const urlParams = new URLSearchParams(window.location.search);
     const myParam = urlParams.get('invite');
 
-    if (myParam !== null) {
-        document.getElementById("roomName").value = myParam;
-        document.getElementById("create_room_div").style.display = "none";
-        // document.getElementById("message").innerHTML = "We have prefilled the form with room-id. Share it with someone you want to talk to";
-        $("#joinRoom").attr("disabled", "disabled");
-        var name = document.querySelector('#nameText'), room = document.querySelector('#roomName'), agree = document.querySelector('[name="agree"]'), errors = [];
-        if (name.value.trim() === '') {
-            errors.push('Enter your name.');
-        }
-        if (room.value.trim() === '') {
-            errors.push('Enter your Room Id.');
-        }
-
-        if (!agree.checked) {
-            errors.push('Accept terms of use and privacy policy.')
-        }
-
-        if (errors.length > 0) {
-            var mappederrors = errors.map(function (item) {
-                return item + "</br>";
-            });
-            var allerrors = mappederrors.join('').toString();
-            toastr.error(allerrors);
-
-            $("#joinRoom").removeAttr("disabled");
-            return false;
-        }
-
-
-        joinRoom(document.getElementById('roomName').value, function (data) {
-
-            if (!jQuery.isEmptyObject(data)) {
-
-                room_id = data.room_id;
-                var user_ref = document.getElementById('nameText').value;
-                var role = 'participant';
-                var retData = {
-                    name: user_ref,
-                    role: role,
-                    roomId: room_id,
-                    user_ref: user_ref,
-                };
-
-                createToken(retData, function (response) {
-                    var token = response;
-                    window.location.href = "confo.html?token=" + token;
-
-                });
-
-
-
-            } else {
-                toastr.error("Room Not Found");
-
-            }
-        });
+    if (myParam === '') {
+        toastr.error("Room Not found");
+        return false;
     }
-    else {
+
+    else if (myParam === null) {
 
         createRoom(function (result) {
             document.getElementById("roomName").value = result;
@@ -143,6 +142,63 @@ document.getElementById('joinRoom').addEventListener('click', function (event) {
 
                 }
             });
+        });
+    }
+    else {
+        document.getElementById("roomName").value = myParam;
+        document.getElementById("create_room_div").style.display = "none";
+        // document.getElementById("message").innerHTML = "We have prefilled the form with room-id. Share it with someone you want to talk to";
+        $("#joinRoom").attr("disabled", "disabled");
+        var name = document.querySelector('#nameText'), room = document.querySelector('#roomName'), agree = document.querySelector('[name="agree"]'), errors = [];
+        if (name.value.trim() === '') {
+            errors.push('Enter your name.');
+        }
+        if (room.value.trim() === '') {
+            errors.push('Enter your Room Id.');
+        }
+
+        if (!agree.checked) {
+            errors.push('Accept terms of use and privacy policy.')
+        }
+
+        if (errors.length > 0) {
+            var mappederrors = errors.map(function (item) {
+                return item + "</br>";
+            });
+            var allerrors = mappederrors.join('').toString();
+            toastr.error(allerrors);
+
+            $("#joinRoom").removeAttr("disabled");
+            return false;
+        }
+
+
+        joinRoom(document.getElementById('roomName').value, function (data) {
+
+            if (!jQuery.isEmptyObject(data)) {
+
+                room_id = data.room_id;
+                var user_ref = document.getElementById('nameText').value;
+                var role = 'participant';
+                var retData = {
+                    name: user_ref,
+                    role: role,
+                    roomId: room_id,
+                    user_ref: user_ref,
+                };
+
+                createToken(retData, function (response) {
+                    var token = response;
+                    window.location.href = "confo.html?token=" + token;
+
+                });
+
+
+
+            } else {
+                toastr.error("Room Not Found");
+
+            }
         });
     }
 });

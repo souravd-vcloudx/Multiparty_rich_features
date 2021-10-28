@@ -15,6 +15,8 @@ var confo_variables = {
     isAudioMute: false,
     isAnnotate: false,
     before_annotate_id: '',
+    annotateStreamId: '',
+    annotateClientId: '',
     isVideoMute: false,
     isRedchat: false,
     isChatViewOpen: false,
@@ -75,6 +77,7 @@ var confo_variables = {
                 room = success.room;
 
                 confo_variables.roomId = room.roomID;
+                document.querySelector('#invite_url').style.display = 'block';
                 confo_variables.updateUsersList();
 
                 var local_name = document.querySelector('.video-caption p');
@@ -133,6 +136,8 @@ var confo_variables = {
                     });
                     console.log("div_ATList========", div_ATList);
                     var ATList_id = [];
+                    console.log("ATList_id========", ATList_id);
+
                     ATList.forEach((item, index) => {
                         if (item.clientId === confo_variables.SpotLightClientId && item.spotlight === false) {
                             if (room.clientId !== item.clientId) {
@@ -238,8 +243,6 @@ var confo_variables = {
                         }
                         ATList_id[index] = `${ATList[index].streamId}`;
                     });
-                    console.log("ATList_id========", ATList_id);
-
                     var difference = ATList_id.length > div_ATList.length ? ATList_id.filter(x => div_ATList.indexOf(x) === -1) : div_ATList.filter(x => ATList_id.indexOf(x) === -1);
 
                     console.log("difference==========", difference);
@@ -269,10 +272,10 @@ var confo_variables = {
                                     spot_div.setAttribute('title', 'Spotlight User');
                                     remote_video_item.appendChild(spot_div);
                                     spot_and_annotate.appendChild(spot_div);
-                                    
-                                    if(room.roomSettings.hasOwnProperty('canvas')) {
+
+                                    if (room.roomSettings.hasOwnProperty('canvas')) {
                                         {
-                                            if(room.roomSettings.canvas === true){
+                                            if (room.roomSettings.canvas === true) {
                                                 var annotate_div = document.createElement('div');
                                                 annotate_div.setAttribute('class', `annotate`);
                                                 annotate_div.setAttribute('id', `a_${item}`);
@@ -388,6 +391,50 @@ var confo_variables = {
                 room.addEventListener("user-disconnected", function (event) {
                     // One user is disconnected
                     // event - User Information of disconnected user
+                    if (room.me.role === 'moderator') {
+                        if (event.clientId === confo_variables.SpotLightClientId) {
+
+                            document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                            document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                            var r = document.querySelector(`.remote_view_${confo_variables.SpotLightUserStreamId}`);
+                            var fluid = document.querySelector('.row-fluid');
+                            document.querySelector(`#s_${confo_variables.SpotLightUserStreamId}`).setAttribute('onclick', 'spotlight(this)');
+                            document.querySelector(`#s_${confo_variables.SpotLightUserStreamId}`).classList.replace('remove-spotlight', 'spotlight');
+
+                            document.querySelector(`#s_${confo_variables.SpotLightUserStreamId}`).setAttribute('title', 'Spotlight User');
+                            fluid.appendChild(r);
+
+                            confo_variables.isSpotLightM = false;
+                            confo_variables.SpotLightUserStreamId = '';
+                            confo_variables.SpotLightClientId = '';
+                        }
+                        if (event.clientId === confo_variables.annotateClientId) {
+                            room.stopAnnotation(function (res) {
+                                if (res.result == 0) {
+                                    // $("#share_screen_btn").prop("title", "Start Share").removeClass('blink-image');
+
+                                }
+                            });
+                            confo_variables.isAnnotate = false;
+                            confo_variables.before_annotate_id = '';
+                            confo_variables.annotateClientId = '';
+                            confo_variables.annotateStreamID = '';
+                        }
+                    }
+                    else {
+                        if (event.clientId === confo_variables.SpotLightClientId) {
+                            document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                            document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                            var r = document.querySelector(`.remote_view_${confo_variables.SpotLightUserStreamId}`);
+                            var fluid = document.querySelector('.row-fluid');
+
+                            fluid.appendChild(r);
+
+                            confo_variables.SpotLightClientId = '';
+                            confo_variables.SpotLightUserStreamId = '';
+                            confo_variables.isSpotLightP = false;
+                        }
+                    }
                     console.log("User-Disconnected---" + JSON.stringify(event));
                     confo_variables.updateUsersList();
                     // confo_variables.updateSmallIcons();
@@ -695,9 +742,9 @@ var confo_variables = {
         }
         var id_annotate_div = _this.id.replace('a_', '');
         room.annotateToolAction('draw', true);
-        annotateStreamID = room.remoteStreams.get(parseInt(id_annotate_div));
+        this.annotateStreamID = room.remoteStreams.get(parseInt(id_annotate_div));
 
-        room.startAnnotation(annotateStreamID, function (rs) {
+        room.startAnnotation(this.annotateStreamID, function (rs) {
             // if (rs.result === 0) {
             //     isPresentating = true;
             //     shareStart = true;
@@ -717,6 +764,7 @@ var confo_variables = {
             //     toastr.error("Screen share not supported");
             // }
         });
+        this.annotateClientId = room.activeTalkerList.get(parseInt(id_annotate_div)).clientId;
         document.querySelector(`#a_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
         document.querySelector(`#s_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
         var height = document.querySelector('.video-inner').offsetHeight;
@@ -742,6 +790,8 @@ var confo_variables = {
         });
         this.isAnnotate = false;
         this.before_annotate_id = '';
+        this.annotateClientId = '';
+        this.annotateStreamID = '';
         document.getElementById(_this.id).setAttribute('onclick', 'annotate(this)');
         document.getElementById(_this.id).classList.replace('remove-annotate', 'annotate');
 
@@ -1023,18 +1073,36 @@ EnxRtc.getDevices(function (arg) {
     if (arg.result === 0) {
         arg.devices.cam.forEach(element => {
             var camId = element.deviceId.toString();
-            camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            if (element.deviceId !== '') {
+                camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            }
         });
 
         arg.devices.mic.forEach(element => {
             var micId = element.deviceId.toString();
-            miclist += `<input type="radio" id="${element.deviceId}" name="mic" value="${element.label}" onclick="switchmic(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            if (element.deviceId !== '') {
+                miclist += `<input type="radio" id="${element.deviceId}" name="mic" value="${element.label}" onclick="switchmic(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+            }
         });
+
+        if (camlist === '') {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.options.timout = '10000000';
+            toastr.error("Camera not found");
+            return false;
+        }
+        if (miclist === '') {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.options.timout = '10000000';
+            toastr.error("Mic not found");
+            return false;
+        }
 
         camera_desc.innerHTML = camlist;
         microphone_desc.innerHTML = miclist;
     } else if (arg.result === 1145) {
         toastr.options.positionClass = 'toast-bottom-right';
+        toastr.options.timout = '10000000';
         toastr.error("Your media devices might be in use with some other application.");
         // $(".error_div").html(
         //     "Your media devices might be in use with some other application."
