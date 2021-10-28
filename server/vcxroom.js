@@ -46,7 +46,7 @@ const multiPartyRoomObj = {
 
 // HTTP Request Header Creation
 const options = {
-  host: 'api-qa.enablex.io',
+  host: process.env.HOST.toString(),
   port: 443,
   key: fs.readFileSync(process.env.CERTIFICATE_SSL_KEY).toString(),
   cert: fs.readFileSync(process.env.CERTIFICATE_SSL_CERT).toString(),
