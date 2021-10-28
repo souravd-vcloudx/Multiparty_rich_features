@@ -7,7 +7,7 @@
         content="Video conferencing solutions built specifically for educators to deliver dynamic virtual classes and training programs to students, faculty, and staff. Try now!">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Sign Up - Sample App: 1-To-1 Conference using EnableX</title>
+    <title>Sign Up - Sample App:</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
         integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/fontawesome.min.css"
@@ -25,13 +25,13 @@
         <!-- =================================================== Nav section ============================-->
         <div id="app" class="container">
             <nav class="navbar navbar-expand-lg navbar-light">
-                <a class="navbar-brand" href="https://www.enablex.io/">
-                    <img src="./img/enableX_logo.png" alt="EnableX">
+                <a class="navbar-brand">
+                    <img src="./img/logo.png">
                 </a>
                 <div class="navbar-collapse collapse nav justify-content-end">
                     <ul class="nav justify-content-end ton-hedr-nav">
                         <li class="nav-item">
-                            <a class="nav-link login">Sample Code <span class='fa fa-code'></span></a>
+                            
                         </li>
                     </ul>
                 </div>
@@ -39,24 +39,24 @@
         </div>
     </header>
     <div class="container">
-        <div class="row d-flex justify-content-center align-items-center">
+        <div class="row d-flex justify-content-center align-items-center" style="position: relative; top: 50px;">
             <div class="col-12 col-md-12 col-xl-6 col-lg-6 form-hedding">
-                <h1>Multi-Party Video App</h1>
-                <p>This Sample Code showcases how EnableX Video Service may be used to create a Multi-Party Video Call
-                    Application. The Login Screen explains all basic information is needed to get a EnableX Token to get
-                    you connected to a Live Video Session. You may need to create your Access Processes to give a
-                    EnableX Token to your User.</p>
+                <h1>Try a Video Conference</h1>
+                <p>You can try our Platform with a Video Conference in a small group of 6 people for 15 minutes. Follow
+                    to steps to get started easily: </p>
+                <p> 1. Submit the given form </p>
+                <p> 2. Once connected, click "Invite URL" to copy the URL to share with others</p>
                 <p></br></p>
                 <h4>Tech Specs</h4>
                 <p>
-                    <strong>Web Toolkit: </strong > v<span id="version_num">1.5</span> <br>
+                    <strong>Web Toolkit: </strong> v<span id="version_num">1.5</span> <br>
                     <strong>Client Application:</strong> HTML5, CSS, JavaScript <br>
                     <strong>Application Server:</strong> NodeJS
                 </p>
             </div>
             <div class="col-12 col-md-12 col-xl-5 col-lg-5 offset-md-1">
                 <div class="form-bg" class="login_join_div" style="display: block;padding-bottom: 25px;">
-                    <h2 class="text-center">Start a Video Call</h2>
+                    <h2 class="text-center">Get started</h2>
                     <div style="display: none;" class="loading text-center">Loading....</div>
                     <form class="mt-4" id="login_form">
                         <div class="form-row">
@@ -65,13 +65,13 @@
                                     required>
                             </div>
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" style="display: none;">
                             <div class="form-group col-md-12">
                                 <input type="text" class="form-control" id="roomName" name="roomName"
                                     placeholder="Room ID" required>
                             </div>
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" style="display: none;">
                             <div class="form-group col-md-12">
                                 <select class="selectpicker show-menu-arrow form-control" id="attendeeRole"
                                     name="attendeeRole" required>
@@ -80,7 +80,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" style="display: none;">
                             <div class="form-group col-md-12">
                                 <input type="checkbox" name="agree" style="height: 15px;width:15px;" checked required>
                                 <label>I
@@ -94,9 +94,9 @@
                             <div class="form-group col-12 checkbox-sec">
                                 <div>
                                     <div>
-                                        <input type="submit" value="Sign In" class="btn btn-primary" id="joinRoom">
+                                        <input type="button" value="Connect" class="btn btn-primary" id="joinRoom">
                                     </div>
-                                    <div id="create_room_div">
+                                    <div id="create_room_div" style="display: none;">
                                         <hr>
                                         <p class="text-center"> Don't have a Room-ID?
                                             <a href="javascript:void(0)" id="create_room">Create One</a>
@@ -133,8 +133,8 @@
         integrity="sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"
         integrity="sha256-yNbKY1y6h2rbVcQtf0b8lq4a+xpktyFc3pSYoGAY1qQ=" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="../config.js"></script>
-	<script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/EnxRtc.js"></script>
     <script type="text/javascript" src="js/room.js"></script>
     <script type="text/javascript" src="js/util.js"></script>

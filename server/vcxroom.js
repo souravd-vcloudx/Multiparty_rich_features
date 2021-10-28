@@ -17,29 +17,31 @@ const roomObj = {
   settings: {
     description: 'One-to-One-Video-Chat-Sample-Web-Application',
     scheduled: false,
-    adhoc: true,
+    adhoc: false,
     moderators: '1',
     participants: '1',
     duration: '30',
     quality: 'SD',
     auto_recording: false,
+    canvas: true,
   },
 };
 
 // room object for creating room with multi party calling
 const multiPartyRoomObj = {
-  name: 'room for multiparty video meeting',
-  owner_ref: 'multiparty github sample',
+  name: 'Trial Video Room',
+  owner_ref: 'Guest',
   settings: {
-    description: 'One-to-One-Video-Chat-Sample-Web-Application',
+    description: 'Trial Video Room',
     scheduled: false,
     adhoc: true,
     moderators: '1',
     participants: '5',
-    duration: '30',
+    duration: '15',
     quality: 'SD',
     auto_recording: false,
-  },
+    canvas: true
+  }
 };
 
 // HTTP Request Header Creation

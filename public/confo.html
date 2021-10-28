@@ -13,7 +13,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="css/style2.css">
+    <link rel="stylesheet" href="css/confo.css">
+    <link rel="stylesheet" href="css/core.css">
 </head>
 
 <body class="custom-multi-app-page">
@@ -33,7 +34,7 @@
                     <div class="left-icons-tools">
                         <div class="tools-inner">
                             <ul>
-                                <li class="chat-btn">
+                                <li class="chat-btn" title="Chat">
                                     <a>
                                         <svg id="black_chat" viewBox="0 0 24 24" width="24" height="24"
                                             stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
@@ -49,7 +50,7 @@
                                         </svg>
                                     </a>
                                 </li>
-                                <li class="participant-btn">
+                                <li class="participant-btn" title="Participants">
                                     <a>
                                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                             stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -61,7 +62,7 @@
                                         </svg>
                                     </a>
                                 </li>
-                                <li class="media-stats" onclick="showMediaStats();">
+                                <li class="media-stats" onclick="showMediaStats();" title="Media Stats">
                                     <a>
                                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                             stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -72,7 +73,7 @@
                                         </svg>
                                     </a>
                                 </li>
-                                <li class="settings-btn">
+                                <li class="settings-btn" title="Settings">
                                     <a>
                                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                             stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -309,8 +310,8 @@
                                 </a>
                             </li>
                             <li>
-                                <a id="mute_btn" title="Mute/Unmute Audio">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                <a id="mute_btn" title='Mute Audio'>
+                                    <svg  viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
                                         class="css-i6dzq1" onclick="muteAudio()" id="unmute-audio-pic">
                                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -331,8 +332,8 @@
                                 </a>
                             </li>
                             <li>
-                                <a id="mutev_btn" title="Mute/Unmute Video">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                <a id="mutev_btn" title="Mute Video">
+                                    <svg  viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
                                         class="css-i6dzq1" onclick="muteVideo()" id="unmute-video-pic">
                                         <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -349,7 +350,7 @@
                                     </svg>
                                 </a>
                             </li>
-                            <li class="lock" title="Lock/Unlock Room">
+                            <li class="lock" title="Lock Room">
                                 <a>
                                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -365,7 +366,7 @@
                                     </svg>
                                 </a>
                             </li>
-                            <li class="cm-screen-share" onclick="screenShare()">
+                            <li class="cm-screen-share" onclick="screenShare()" title="Start Share">
                                 <a>
                                     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                                         version="1.1" id="Capa_1" x="0px" y="0px" width="24" height="24"
@@ -416,7 +417,7 @@
                                     </svg>
                                 </a>
                             </li>
-                            <li class="recording-btn" title="Start/Stop Recording" onclick="startRecording()">
+                            <li class="recording-btn" title="Start/Stop Recording" onclick="startRecording()" style="display: none;">
                                 <a>
                                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="red" stroke-width="2"
                                         fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
@@ -425,7 +426,7 @@
                                     </svg>
                                 </a>
                             </li>
-                            <li class="call-disconnect" title="End Call" onclick="disconnectCall()">
+                            <li class="call-disconnect" onclick="disconnectCall()">
                                 <a id="disconnect_call">
                                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -436,6 +437,11 @@
                                         </path>
                                     </svg>
                                     <span>Leave</span>
+                                </a>
+                            </li>
+                            <li class="call-disconnect invite-btn" id="invite_url" title="Invite URL" onclick="copyUrl()">
+                                <a id="disconnect_call">
+                                    <span>Invite URL</span>
                                 </a>
                             </li>
 
@@ -459,7 +465,7 @@
     <script type="text/javascript" src="js/scrollbar.js"></script>
     <script type="text/javascript" src="js/EnxRtc.js"></script>
     <script type="text/javascript" src="../config.js"></script>
-    <script type="text/javascript" src="js/confo1.js"></script>
+    <script type="text/javascript" src="js/confo.js"></script>
     <script type="text/javascript" src="js/resonsive.js"></script>
 </body>
 

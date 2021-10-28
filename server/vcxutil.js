@@ -13,7 +13,7 @@ const logger = log.getLogger('AppApi');
 const vcxutil = {};
 
 // Function: To create basic authentication header using APP ID and APP KEY
-vcxutil.getBasicAuthToken = () => btoa(`${process.env.ENABLEX_APP_ID}:${process.env.ENABLEX_APP_KEY}`);
+vcxutil.getBasicAuthToken = () => btoa(`${process.env.VIDEO_APP_ID}:${process.env.VIDEO_APP_KEY}`);
 
 // Function: To connect to Enablex Server API Service
 vcxutil.connectServer = (options, data, callback) => {

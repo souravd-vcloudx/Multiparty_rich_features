@@ -1,801 +1,681 @@
+// All variables are stored in object which are used in this file
 
-
-document.querySelector(".chat-btn a").addEventListener("click", function (e) {
-    e.stopPropagation();
-    document.querySelector('.custom-app-wrapper').classList.toggle('chat-bar-open');
-});
-
-document.querySelector("body").addEventListener("click", function (ele) {
-    document.querySelector('.custom-app-wrapper').classList.remove('chat-bar-open');
-});
-
-document.querySelector(".chat-area").addEventListener("click", function (a) {
-    a.stopPropagation();
-});
-
-document.querySelector(".recording-tools ul li.menu-icon").addEventListener("click", function () {
-    document.querySelector('.custom-app-wrapper').classList.toggle('menu-open');
-});
-
-
-// variables and constants used
-const searchParams = new URLSearchParams(window.location.search);
-const token = searchParams.get("token");
-const stallIds = [];
-var VideoSize = {
-    'HD': [320, 180, 1280, 720],
-    'SD': [640, 480, 640, 480],
-    'LD': [80, 45, 640, 360]
-};
-
-var config = {
-    video: true,
-    audio: true,
-    data: true,
-    videoSize: VideoSize[video_type],
-    // attributes: { name: user_name, type: user_type },
-};
-
-
-var playerOptions = {
-    player: {
-        'height': '150px',
-        'width': '100%',
-        'top': 0,
-
-
+var confo_variables = {
+    roomId: '',
+    searchParams: '',
+    previousToggleClass: '',
+    currentToggleClass: '',
+    shareStartedBy: '',
+    token: '',
+    video_type: 'SD',
+    SpotLightClientId: '',
+    SpotLightUserStreamId: '',
+    isSpotLightM: false,
+    isSpotLightP: false,
+    isAudioMute: false,
+    isAnnotate: false,
+    before_annotate_id: '',
+    isVideoMute: false,
+    isRedchat: false,
+    isChatViewOpen: false,
+    isRecording: false,
+    isLock: false,
+    isShareStarted: false,
+    isShareReceived: false,
+    streamShare: null,
+    VideoSize: {
+        'HD': [320, 180, 1280, 720],
+        'SD': [640, 480, 640, 480],
+        'LD': [80, 45, 640, 360],
     },
-    toolbar: {
-        displayMode: false,
-        branding: {
-            display: false
-        }
-    }
-};
-
-var player_options = {
-    player: {
-        autoplay: "",     // Enum: autoplay (default)
-        name: "",         // Use stream.attributes.name preferably
-        nameDisplayMode: "",  // Enum: auto (default), on, off
-        frameFitMode: "", // Enum: bestFit (default), coverMax
-        skin: "default",   // Enum: default (default)
-        class: "h-100 row align-items-center"       // Custom CSS Class Name
+    config: {
+        video: true,
+        audio: true,
+        data: true
     },
-    toolbar: {
-        displayMode: false,
-    }
-};
-
-
-
-
-var isChatShow = false;
-var isVideoMute = false;
-var isStatShow = false;
-var toggle_case = false;
-var isAudioMute = false;
-var isRecordOn = false;
-var isListVisible = false;
-var toggleSwitch = false;
-var isLocked = false;
-var annotateStreamID = null;
-var isAnnotate = false;
-var presentationStarted = false;
-var desktop_shared = false;
-var streamShare = null;
-var shareStream = null;
-var shareStart = false;
-var ischatViewOpen = false;
-var audio_muted = false;
-var video_muted = false;
-let chatCount = 0;
-var video_type = "SD";
-var toolbar_config = {
-    "video_mute": true,
-    "audio_mute": true,
-    "screen_share": true,
-    "chat": true
-};
-var chatList = '';
-var tm = false;
-var room = null;
-var inCallData = null;
-var timer = null;
-var network_error_showed = false;
-
-var stats_enabled = false;
-var SubscribedStreamMap = new Map();
-var localStream,
-    remote_view,
-    sAMute = true,
-    sVMute = true,
-    rAmute = true,
-    rVMute = true;
-
-// layout definition Possible values pip or grid
-var layout_config = "pip";
-// var layout_config="pip";
-
-var optionsLocal;
-var remoteOptions;
-
-// layout declration
-
-switch (layout_config) {
-    case 'pip':
-        var optionsLocal = {
-            player: {
-                height: "100px",
-                width: "100px",
-            },
-            toolbar: {
-                displayMode: false,
-            },
-            resizer: false,
-        };
-
-        var remoteOptions = {
-            player: {
-                height: "150px",
-                width: "150px",
-            },
-            resizer: false,
-            toolbar: {
-                displayMode: false,
-            },
-        };
-        // document.querySelector("#local_view").classList.add("local_class_peep");
-        // document.querySelector("#remote_view").classList.add("remote_class_peep");
-
-
-        break;
-    case 'grid':
-        optionsLocal = {
-            player: {
-                height: "100%",
-                width: "100%",
-            },
-            toolbar: {
-                displayMode: false,
-            },
-            resizer: false,
-        };
-
-        remoteOptions = {
-            player: {
-                height: "100%",
-                width: "100%",
-            },
-            resizer: false,
-            toolbar: {
-                displayMode: false,
-            },
-        };
-        document.querySelector("#local_view").classList.add("col-sm-6");
-        document.querySelector("#remote_view").classList.add("col-sm-6");
-        document.querySelector("#local_view").classList.remove("local_class_peep");
-        document.querySelector("#remote_view").classList.remove("remote_class_peep");
-        document.querySelector("#local_view").classList.add("local_class_grid");
-        document.querySelector("#remote_view").classList.add("remote_class_grid");
-        break;
-}
-
-
-
-$('[data-toggle="tooltip"]').tooltip();
-
-// update Layout for chat window and resizing
-updateChatHeight();
-
-window.addEventListener("resize", function () {
-    updateChatHeight();
-});
-
-// $("#chat-window").scrollbar({
-//     autoBottom: true,
-// });
-
-
-
-// Get device list method  to check the camera and mic permission
-
-EnxRtc.getDevices(function (arg) {
-    let microlist = '';
-    let camlist = '';
-    let speakerlist = '';
-    if (arg.result === 0) {
-        arg.devices.mic.forEach((element) => {
-            if (element.deviceId === "default") {
-                microlist += `<input type="radio" id="${element.deviceId}" name="micro" value="${element.label}" onclick="switchmicro(this)" checked> <label for="${element.deviceId}">${element.label}</label><br>`;
-            } else {
-                microlist += `<input type="radio" id="${element.deviceId}" name="micro" value="${element.label}" onclick="switchmicro(this)"> <label for="${element.deviceId}">${element.label}</label><br>`;
+    PlayerOpt: {
+        player: {
+            'height': '150px',
+            'width': '150px',
+        },
+        toolbar: {
+            displayMode: false,
+            branding: {
+                display: false
             }
-        });
-        document.querySelector('#mic-list').innerHTML = microlist;
-
-        arg.devices.cam.forEach((element) => {
-            if (element.deviceId === "default") {
-                camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)" checked> <label for="${element.deviceId}">${element.label}</label><br>`;
-            } else {
-                camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)"> <label for="${element.deviceId}">${element.label}</label><br>`;
-            }
-        });
-        document.querySelector('#cam-list').innerHTML = camlist;
-
-        arg.devices.speaker.forEach((element) => {
-            if (element.deviceId === "default") {
-                speakerlist += `<input type="radio" id="${element.deviceId}" name="speaker" value="${element.label}" onclick="switchspeaker(this) checked"><label for="${element.deviceId}">${element.label}</label><br>`
-
-            } else {
-                speakerlist += `<input type="radio" id="${element.deviceId}" name="speaker" value="${element.label}" onclick="switchspeaker(this)"><label for="${element.deviceId}">${element.label}</label><br>`;
-            }
-        });
-        document.querySelector('#speaker-list').innerHTML = speakerlist;
-
-    } else if (arg.result === 1145) {
-        $(".error_div").html(
-            "Your media devices might be in use with some other application."
-        );
-        $(".error_div").show();
-        return false;
-    } else {
-        $(".error_div").show();
-
-        return false;
-    }
-});
-
-
-// Controls hide and show based on the toolbar config
-
-if (toolbar_config.video_mute == false) {
-    document.querySelector("#mute_video").style.display = "none";
-}
-if (toolbar_config.audio_mute == false) {
-    document.querySelector("#mute_audio").style.display = "none";
-}
-if (toolbar_config.screen_share == false) {
-    document.querySelector("#share_screen_btn").style.display = "none";
-}
-if (toolbar_config.chat == false) {
-    document.querySelector("#toggle_chat").style.display = "none";
-}
-
-// connect to the room using token
-ConnectCall(token);
-function ConnectCall(token) {
-    EnxRtc.Logger.setLogLevel(5);
-    localStream = EnxRtc.joinRoom(token, config, function (success, error) {
-        // if room connection has some error
-        if (error && error == null) {
-            $(".error_div").html(
-                "Room connection error." + error.message
-            );
         }
-        // if room connects successfully
-        if (success && success !== null) {
+    },
+    ConnectCall: function (token) {
+        EnxRtc.Logger.setLogLevel(5);
+        localStream = EnxRtc.joinRoom(token, {
+            video: this.config.video, audio: this.config.audio, data: this.config.data, videoSize: this.VideoSize[this.video_type],
+        }, function (success, error) {
 
+            console.log("success---", success, "----error----", error);
 
-
-            //play local view
-            localStream.play("self-view", optionsLocal);
-
-            $("#self_mute_buttons").show();
-            // assigning room object to a variable
-            room = success.room;
-            // check if the user joined as moderator or participant
-            isModerator = room.me.role == "moderator" ? true : false;
-
-            // to update the user list
-            userList();
-
-            /// To check if user is mod so that lock function may be shown
-            if (isModerator === true) {
-                const showLock = document.querySelector('#lock_btn');
-                if (showLock.style.display === "none") {
-                    showLock.style.display = "block";
-                } else {
-                    showLock.style.display = "none";
+            if (error && error !== null) {
+                // Look for error.type and error.msg.name to handle Exception
+                if (error.type == "media-access-denied") {
+                    // Media Media Inaccessibility
+                } else if (error.error === 4122) {
+                    toastr.options.positionClass = 'toast-bottom-right';
+                    toastr.error('Room is locked');
                 }
             }
+            if (success && success !== null) {
+                // console.log("this.localStream===="+JSON.stringify(localStream));
+                localStream.play("self-view", confo_variables.PlayerOpt);
+                console.log("confo_varibles---" + this.isAudioMute);
+                console.log("confo_varibles---" + confo_variables.isAudioMute);
 
-            /// To check if the user is mod so that record function can be shown
+                document.getElementById(`${localStream.config.video.deviceId}`).checked = true;
+                document.getElementById(`${localStream.config.audio.deviceId}`).checked = true;
 
-            if (isModerator === true) {
-                const showRecord = document.querySelector('#record_btn');
-                if (showRecord.style.display === "none") {
-                    showRecord.style.display = "block";
-                } else {
-                    showRecord.style.display = "none";
+
+                room = success.room;
+
+                confo_variables.roomId = room.roomID;
+                confo_variables.updateUsersList();
+
+                var local_name = document.querySelector('.video-caption p');
+                local_name.innerHTML = room.me.name;
+
+                var room_name = document.querySelector('.room-name h4');
+
+                isModerator = room.me.role == "moderator" ? true : false;
+
+                room_name.innerHTML = success.roomData.name;
+
+                if (!isModerator) {
+                    document.querySelector('#invite_url').style.display = 'none';
+                    document.querySelector('.lock').style.display = 'none';
+                    document.querySelector('.recording-btn').style.display = 'none';
                 }
-            }
 
-            var ownId = success.publishId;
-            for (var i = 0; i < success.streams.length; i++) {
-                room.subscribe(success.streams[i]);
-            }
-            // Active talkers handling
-            room.addEventListener("active-talkers-updated", function (event) {
-                console.log("Active Talker List :- " + JSON.stringify(event));
-                var video_player_len = document.querySelector("#call_div").childNodes;
+                // toastr.error("you are joined");
+                if (room.waitRoom && room.me.role != "moderator") {
+                    // Wait for Moderator
+                } else {
+                    remoteStreams = success.room.streams;
+                }
 
-                ATList = event.message.activeList;
+                var ownId = success.publishId;
+                for (var i = 0; i < success.streams.length; i++) {
+                    room.subscribe(success.streams[i]);
+                }
+                const video_player_len = document.querySelectorAll('.remote-view');
 
-                if (
-                    event.message &&
-                    event.message !== null &&
-                    event.message.activeList &&
-                    event.message.activeList !== null
-                ) {
-                    var oldList = ATList;
-                    ATUserList = event.message.activeList;
-                    if (ATUserList.length == 0) {
-                        document.querySelector("#call_div").innerHTML = "";
-                        document.querySelector(".remote-name").innerText = "";
+
+                room.addEventListener('active-talkers-updated', function (event) {
+                    console.log("Active-Talker-Updated---" + event);
+
+                    ATList = event.message.activeList;
+
+
+                    if (event.message && event.message !== null && event.message.activeList && event.message.activeList !== null) {
+                        if (ATList.length === 0 && document.querySelectorAll('.remote-view').length > 0) {
+                            console.log("ATList length--" + ATList.length);
+                            document.querySelector('.remote-view').remove();
+                        }
+                        if (ATList.length === 0 && document.querySelectorAll('.remote-view').length === 0) {
+                            document.querySelector('.custom-multi-app-page .video-area .row-fluid').setAttribute('class', 'row-fluid custom1');
+                            return;
+                        }
+                        if (ATList.length == video_player_len.length) {
+                            return;
+                        }
+
                     }
 
-                    if (SubscribedStreamMap.size > 0) {
+                    var div_ATList = [];
+                    document.querySelectorAll('.video-inner-copy').forEach((item, index) => {
+                        div_ATList[index] = item.getAttribute('id');
+                    });
+                    console.log("div_ATList========", div_ATList);
+                    var ATList_id = [];
+                    ATList.forEach((item, index) => {
+                        if (item.clientId === confo_variables.SpotLightClientId && item.spotlight === false) {
+                            if (room.clientId !== item.clientId) {
 
-                        // var x = document.querySelectorAll('.vcx_player');
-                        // x.forEach((item, index) => {
-                        //     item.remove();
-                        //   });
+                                if (room.me.role === 'moderator') {
+                                    if (confo_variables.isShareReceived === true) {
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'spotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('remove-spotlight', 'spotlight');
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Spotlight User');
+                                    }
+                                    else if (confo_variables.isShareStarted === true) {
+                                        document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        var fluid = document.querySelector('.row-fluid');
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'spotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('remove-spotlight', 'spotlight');
 
-                        var parent = document.getElementById('call_div');
-                        while (parent.firstChild) {
-                            parent.removeChild(parent.firstChild);
-                        }
-                        for (var stream in room.remoteStreams.getAll()) {
-                            var st = room.remoteStreams.getAll()[stream];
-                            for (var j = 0; j < ATList.length; j++) {
-                                if (ATList[j].streamId == st.getID()) {
-                                    // startDuration();
-                                    // showDivs();
-                                    remote_view = st;
-                                    $(".self-name").html(room.me.name);
-                                    var each_video = document.createElement('div');
-                                    each_video.setAttribute('id', `remote_${j}`);
-                                    // st.play("call_div", remoteOptions);
-                                    $(".remote-name").html(ATList[j].name);
-                                    $(".logout_div").hide();
-                                    $("#option_container").hide();
-                                    $("#call_container").show();
-                                    document.getElementById('call_div').appendChild(each_video);
-                                    st.play(`remote_${j}`, remoteOptions);
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Spotlight User');
+                                        fluid.appendChild(r);
+
+                                    } else {
+                                        document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        var fluid = document.querySelector('.row-fluid');
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'spotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('remove-spotlight', 'spotlight');
+
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Spotlight User');
+                                        fluid.appendChild(r);
+                                    }
+                                    confo_variables.SpotLightClientId = '';
+                                    confo_variables.SpotLightUserStreamId = '';
+                                } else {
+                                    if (confo_variables.isShareReceived === true) {
+
+                                    }
+                                    else {
+                                        document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        var fluid = document.querySelector('.row-fluid');
+                                        fluid.appendChild(r);
+                                    }
+                                    confo_variables.isSpotLightP = false;
+                                    confo_variables.SpotLightClientId = '';
+                                    confo_variables.SpotLightUserStreamId = '';
                                 }
                             }
                         }
+                        else if (item.spotlight === true) {
+                            confo_variables.SpotLightClientId = item.clientId;
+                            confo_variables.SpotLightUserStreamId = item.streamId;
+                            if (room.clientId !== confo_variables.SpotLightClientId) {
+                                if (room.me.role === 'moderator') {
+                                    if (confo_variables.isShareReceived === true) {
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'removeSpotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Remove Spotlight');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('spotlight', 'remove-spotlight');
 
-                    }
-                }
-            });
-            // chat message received
-            room.addEventListener("message-received", function (data) {
-                var obj = {
-                    msg: data.message.message,
-                    timestamp: data.message.timestamp,
-                    username: data.message.sender,
-                };
-                if (!ischatViewOpen) {
-                    $("#chat-tag").show();
-                }
-                plotChat(obj);
-            });
-            // room recording start  notification
-            // room.addEventListener("room-record-on", function () {
-            //     $("#rec_notification").show();
-            // });
-            // // room recording stop  notification
-            // room.addEventListener("room-record-off", function () {
-            //     $("#rec_notification").hide();
-            // });
+                                    }
+                                    else if (confo_variables.isShareStarted === true) {
+                                        document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.add('spotlight-open');
+                                        var scr = document.querySelector('.screen-inner');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        scr.appendChild(r);
+                                        console.log("screen-inner", scr);
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'removeSpotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('spotlight', 'remove-spotlight');
 
-            room.addEventListener("stream-subscribed", function (streamEvent) {
-                if (streamEvent.stream.getID() !== ownId) {
-                    SubscribedStreamMap.set(
-                        streamEvent.stream.getID(),
-                        streamEvent.stream
-                    );
-                    var stream =
-                        streamEvent.data && streamEvent.data.stream
-                            ? streamEvent.data.stream
-                            : streamEvent.stream;
-                    stream.addEventListener("stream-data-in", function (data) {
-                        var obj = {
-                            msg: data.msg.message,
-                            timestamp: data.msg.timestamp,
-                            username: data.msg.from,
-                        };
-                        plotChat(obj);
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Remove Spotlight');
+
+                                    }
+                                    else {
+                                        document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.add('spotlight-open');
+                                        var scr = document.querySelector('.screen-inner');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        scr.appendChild(r);
+                                        console.log("screen-inner", scr);
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('onclick', 'removeSpotlight(this)');
+                                        document.querySelector(`#s_${item.streamId}`).classList.replace('spotlight', 'remove-spotlight');
+
+                                        document.querySelector(`#s_${item.streamId}`).setAttribute('title', 'Remove Spotlight');
+                                    }
+                                }
+                                else {
+                                    confo_variables.isSpotLightP = true;
+                                    if (confo_variables.isShareReceived === true) {
+
+                                    } else {
+                                        document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                        document.querySelector('.custom-app-wrapper').classList.add('spotlight-open');
+                                        var scr = document.querySelector('.screen-inner');
+                                        var r = document.querySelector(`.remote_view_${item.streamId}`);
+                                        scr.appendChild(r);
+                                        console.log("screen-inner", scr);
+                                    }
+                                }
+                            }
+                        }
+                        ATList_id[index] = `${ATList[index].streamId}`;
                     });
-                }
-            });
+                    console.log("ATList_id========", ATList_id);
 
-            // Notification to all when share starts
-            // room.addEventListener("share-started", function (event) {
-            // // Get Stream# 101 which carries Screen Share 
-            // var shared_stream = room.remoteStreams.get(101);  
-            // shared_stream.play("show_stream_div",playerOptions); // Play in Player
-            // // document.querySelector('#new-screen').style.display="block";
+                    var difference = ATList_id.length > div_ATList.length ? ATList_id.filter(x => div_ATList.indexOf(x) === -1) : div_ATList.filter(x => ATList_id.indexOf(x) === -1);
 
+                    console.log("difference==========", difference);
 
-            // });
+                    difference.forEach((item, index) => {
+                        if (ATList_id.indexOf(item) === -1) {
+                            console.log('NIkaal diya');
+                            document.querySelector(`.remote_view_${item}`).remove();
+                        }
+                        else {
+                            const st = room.remoteStreams.get(parseInt(item));
+                            if (!st.local) {
+                                // confo_variables.activeTlakerUI(st, item);
+                                var remote_video_item = document.createElement('div');
+                                remote_video_item.setAttribute('class', `video-item remote-view remote_view_${parseInt(item)}`);
+                                remote_video_item.style.display = 'block';
 
-            //     // Notification to all when share stops
-            // room.addEventListener("share-stopped", function (event) {
-            // // Handle UI here
-            // alert("Screen Share Stopped");
-            // });
-
-
-
-
-            // room.addEventListener("share-started", function (event) {
-            //     toggle_case = true;
-            //     var ua = navigator.userAgent.toLowerCase();
-            //     var ConfigSpecs = {
-            //         maxVideoBW: 120,
-            //     };
-            //     if (ua.indexOf("safari") != -1) {
-            //         if (ua.indexOf("chrome") > -1) {
-            //             localStream.updateConfiguration(ConfigSpecs, function (result) { });
-            //         }
-            //     }
-            //     var clientId = event.message.clientId;
-            //     if (presentationStarted == false && desktop_shared == false) {
-            //         if (shareStream == null) {
-            //             var st = room.remoteStreams.get(101);
-            //             if (st.stream !== undefined) {
-            //                 presentationStarted = true;
-            //                 shareStart = true;
-            //                 toggleStreamView("show_stream_div", st, true);
-            //             }
-            //         }
-            //     }
-            // });
-
-
-            // room.addEventListener("share-stopped", function (event) {
-            //     toggle_case = false;
-
-            //     var ua = navigator.userAgent.toLowerCase();
-            //     var ConfigSpecs = {
-            //         maxVideoBW: 0,
-            //     };
-            //     if (ua.indexOf("safari") != -1) {
-            //         if (ua.indexOf("chrome") > -1) {
-            //             localStream.updateConfiguration(ConfigSpecs, function (result) { });
-            //         }
-            //     }
+                                if (isModerator) {
+                                    var spot_and_annotate = document.createElement('div');
+                                    spot_and_annotate.setAttribute('class', 'spotannotate');
+                                    var spot_div = document.createElement('div');
+                                    spot_div.setAttribute('class', `spotlight`);
+                                    spot_div.setAttribute('id', `s_${item}`);
+                                    spot_div.setAttribute('style', "z-index:100 ;");
+                                    spot_div.setAttribute('onclick', 'spotlight(this)');
+                                    spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+                                    spot_div.setAttribute('title', 'Spotlight User');
+                                    remote_video_item.appendChild(spot_div);
+                                    spot_and_annotate.appendChild(spot_div);
+                                    
+                                    if(room.roomSettings.hasOwnProperty('canvas')) {
+                                        {
+                                            if(room.roomSettings.canvas === true){
+                                                var annotate_div = document.createElement('div');
+                                                annotate_div.setAttribute('class', `annotate`);
+                                                annotate_div.setAttribute('id', `a_${item}`);
+                                                annotate_div.setAttribute('style', "z-index:100 ;");
+                                                annotate_div.setAttribute('onclick', 'annotate(this)');
+                                                annotate_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+                                                annotate_div.setAttribute('title', 'Annotate User');
+                                                spot_and_annotate.appendChild(annotate_div);
+                                            }
+                                        }
+                                    }
 
 
-            //     if (presentationStarted === false) {
-            //         desktop_shared = true;
-            //         streamShare = room.startScreenShare((res) => {
-            //             if (res.result === 0) {
-            //                 presentationStarted = true;
-            //                 shareStart = true;
-            //                 document.querySelector('#share_screen_btn').setAttribute("title", "Stop Share");
-            //             } else if (res.result === 1151) {
-            //                 desktop_shared = false;
-            //                 alert("Screen Share is on by other. Concurrent Screen Shares not supported");
-            //             } else if (res.result === 1143) {
-            //                 desktop_shared = false;
-            //                 alert("Device not found. Screen Share disabled at OS");
-            //             } else {
-            //                 desktop_shared = false;
-            //                 alert("Screen Share is not supported");
-            //             }
+                                    remote_video_item.appendChild(spot_and_annotate);
 
-            //         });
+                                }
 
-            //     }
-            //     else if (streamShare) {
-            //         room.stopScreenShare((res) => {
-            //             if (res.result === 0) {
-            //                 document.querySelector('#share_screen_btn').setAttribute("title", "Start Share");
-            //                 presentationStarted = false;
-            //                 shareStart = false;
-            //                 streamShare = null;
-            //             }
-            //         })
-            //     }
-            //     desktop_shared = false;
-            //     shareStart = false;
-            //     presentationStarted = false;
-            //     streamShare = null;
-            //     toggleStreamView("show_stream_div", null, false);
-            // });
+                                var remote_video_inner = document.createElement('div');
+                                remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                remote_video_inner.setAttribute('id', `${item}`);
+                                var video_caption = document.createElement('div');
+                                video_caption.setAttribute('class', 'video-caption');
+                                var remote_name_p = document.createElement('p');
+                                remote_name_p.innerHTML = `${room.activeTalkerList.get(parseInt(item)).name}`;
+                                console.log("name is --=--", room.activeTalkerList.get(parseInt(item)).name);
+                                video_caption.appendChild(remote_name_p);
+
+                                var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
+                                small_unmute_audio.setAttribute('id', `unmute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                                var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
+                                small_mute_audio.setAttribute('id', `mute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                                var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
+                                small_unmute_video.setAttribute('id', `unmute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                                var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
+                                small_mute_video.setAttribute('id', `mute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
 
 
-            // screen share started notification
-            // room.addEventListener("share-started", function (event) {
-            //     var ua = navigator.userAgent.toLowerCase();
-            //     var ConfigSpecs = {
-            //         maxVideoBW: 120,
-            //     };
-            //     if (ua.indexOf("safari") != -1) {
-            //         if (ua.indexOf("chrome") > -1) {
-            //             localStream.updateConfiguration(ConfigSpecs, function (result) {});
-            //         }
-            //     }
-
-            //     var clientId = event.message.clientId;
-            //     var stream_id = event.message.streamId;
-            //     if (presentationStarted == false && desktop_shared == false) {
-            //         if (shareStream == null) {
-            //             var st = room.remoteStreams.get(101);
-            //             if (st.stream !== undefined) {
-            //                 presentationStarted = true;
-            //                 shareStart = true;
-            //                 toggleStreamView("show_stream_div", st, true);
-            //             }
-            //         }
-            //     }
-            // });
-            // screen share stopped notification
-            // room.addEventListener("share-stopped", function (event) {
-            //     var ua = navigator.userAgent.toLowerCase();
-            //     var ConfigSpecs = {
-            //         maxVideoBW: 0,
-            //     };
-            //     if (ua.indexOf("safari") != -1) {
-            //         if (ua.indexOf("chrome") > -1) {
-            //             localStream.updateConfiguration(ConfigSpecs, function (result) {});
-            //         }
-            //     }
-
-            //     desktop_shared = false;
-            //     shareStart = false;
-            //     presentationStarted = false;
-            //     streamShare = null;
-            //     toggleStreamView("show_stream_div", null, false);
-            // });
-
-            // Notification to all when share starts
-            // room.addEventListener("share-started", function (event) {
-            //  // Get Stream# 101 which carries Screen Share 
-            //  var shared_stream = room.remoteStreams.get(101);  
-            //  shared_stream.play("new-screen", playerOptions); // Play in Player
-            // });
-
-            // // Notification to all when share stops
-            // room.addEventListener("share-stopped", function (event) {
-            //  // Handle UI here
-            // });
-
-
-
-            // // user disconnection notification
-            room.addEventListener("user-disconnected", function (streamEvent) {
-                if (room.clientId !== streamEvent.clientId) {
-                    document.querySelector("#call_div").innerHTML = "";
-                    document.querySelector(".remote-name").innerText = "";
-                    // to update the user list
-                    userList();
-                }
-            });
-
-            //room lock notification
-            room.addEventListener('room-locked', () => {
-                confirm("Room Locked");
-                document.querySelector('#lock-pic').classList.remove('fa-lock');
-                document.querySelector('#lock-pic').classList.add('fa-unlock');
-                isLocked = true;
-            });
-
-            room.addEventListener('room-unlocked', () => {
-                confirm("Room Unlocked");
-                document.querySelector('#lock-pic').classList.remove('fa-unlock');
-                document.querySelector('#lock-pic').classList.add('fa-lock');
-                isLocked = false;
-            })
-            // Notification to others when a user muted audio
-            room.addEventListener("user-audio-muted", function (event) {
-                // Handle UI here
-                //confirm("Audio is muted");
-            });
-
-            // Notification to others when a user muted audio
-            room.addEventListener("user-audio-unmuted", function (event) {
-                // Handle UI here
-                //  confirm("Audio is unmuted");
-            });
-
-            room.addEventListener("user-video-muted", function (event) {
-                // Handle UI here
-                // confirm("Video is muted");
-            });
-
-            // Notification to others when a user muted video
-            room.addEventListener("user-video-unmuted", function (event) {
-                // Handle UI here
-                //confirm("Video is unmuted");
-            });
-
-            // room.addEventListener("message-recieved", function (event) {
-            //     var inMsg = event.message;
-            //     console.log("event", JSON.stringify(event));
-
-            //     if (inMsg.broadcast === true) {
-            //         // var el = document.getElementById("chatting-list");
-            //         // var node = document.createElement("li");
-            //         // var link = document.createElement("a");
-            //         // node.innerText=`<li id="${inMsg.senderId}">${inMsg.sender} = ${inMsg.message}</li>`;
-            //         // //link.innerText = "Link Text"
-            //         // //link.setAttribute('href', 'http://www.google.it');
-            //         // el.appendChild(node);
-            //         // //el.appendChild(node);
-            //         document.querySelector('#chat-list').innerHTML = `<li id="${inMsg.senderId}">${inMsg.sender} = ${inMsg.message}</li>`
-            //     } else {
-            //         alert("Not broadcast");
-            //     }
-            // });
-
-            // Notification recording started to all
-            room.addEventListener("room-record-on", function (event) {
-                // Recording start UI show
-                confirm("Recording has Started");
-
-                document.querySelector('#record_btn').title = "Stop Recording";
-                // event.message.moderatorId = Moderator who stated recording
-                console.log(`Recording started by ${event.message.moderatorId}`);
-
-            });
-
-            // Notification recording stop to all
-            room.addEventListener("room-record-off", function (event) {
-                //Recording stopped, show in UI
-                confirm("Recording has stopped");
-                //    if(document.querySelector('#record_btn').style.display==='block'){
-                //        document.querySelector('#record_btn').style.display="none";
-                //    }
-                document.querySelector('#record_btn').title = "Start Recording";
-                //event.message.moderatorId = Moderator who stopped recording
-                console.log(`Recording was stopped by ${event.message.moderatorId}`);
-            })
-
-
-            room.addEventListener("media-stats ", function (evt) {
-                // evnt is JSON with Media Stats, e.g. 
-                /*
-                {	type: 'media-stats', 
-                    talkers: [{ }], 
-                    publisher:  {},
-                    share: {}, 
-                    canvas: {}
-                }
-                */
-            });
-
-            room.addEventListener('user-connected', (data) => {
-                // console.log(data);
-                // to update the user list
-                userList();
-            });
-
-            room.addEventListener("share-started", function (event) {
-                toggle_case = true;
-                var ua = navigator.userAgent.toLowerCase();
-                var ConfigSpecs = {
-                    maxVideoBW: 120,
-                };
-                if (ua.indexOf("safari") != -1) {
-                    if (ua.indexOf("chrome") > -1) {
-                        localStream.updateConfiguration(ConfigSpecs, function (result) { });
+                                video_caption.appendChild(small_unmute_audio);
+                                video_caption.appendChild(small_mute_audio);
+                                video_caption.appendChild(small_unmute_video);
+                                video_caption.appendChild(small_mute_video);
+                                remote_video_item.appendChild(remote_video_inner);
+                                remote_video_item.appendChild(video_caption);
+                                document.querySelector('.row-fluid').appendChild(remote_video_item);
+                                console.log("Append ho gaya sab kuch ==========");
+                                st.play(`${item}`, confo_variables.PlayerOpt);
+                            }
+                        }
+                    });
+                    // confo_variables.updateSmallIcons();
+                    let len = document.querySelectorAll('.custom-multi-app-page .video-area .video-item').length - 1;
+                    console.log("len---" + len);
+                    if (confo_variables.previousToggleClass !== '') {
+                        document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.replace(confo_variables.previousToggleClass, 'custom' + len);
+                        console.log("if previousToggleClass---" + confo_variables.previousToggleClass);
                     }
-                }
-                var clientId = event.message.clientId;
-                if (presentationStarted == false && desktop_shared == false) {
-                    if (shareStream == null) {
-                        var st = room.remoteStreams.get(101);
+                    else {
+                        document.querySelector('.custom-multi-app-page .video-area .row-fluid').classList.toggle('custom' + len);
+                        console.log("else previousToggleClass---" + confo_variables.previousToggleClass);
+                    }
+                    confo_variables.previousToggleClass = 'custom' + len;
+                    console.log("outside previousToggleClass---" + confo_variables.previousToggleClass);
+                    confo_variables.updateSmallIcons();
+
+                });
+
+                // Notification to others when a user muted audio
+                room.addEventListener("user-audio-muted", function (event) {
+                    // Handle UI here
+                    //confirm("Audio is muted");
+                    if (room.clientId !== event.clientId) {
+                        confo_variables.updateUsersList();
+                    }
+                    // confo_variables.updateSmallIcons();
+                });
+
+                // Notification to others when a user muted audio
+                room.addEventListener("user-audio-unmuted", function (event) {
+                    // Handle UI here
+                    //  confirm("Audio is unmuted");
+                    if (room.clientId !== event.clientId) {
+                        confo_variables.updateUsersList();
+                    }
+                    // confo_variables.updateSmallIcons();
+                });
+
+                room.addEventListener("user-video-muted", function (event) {
+                    // Handle UI here
+                    // confirm("Video is muted");
+                    if (room.clientId !== event.clientId) {
+                        confo_variables.updateUsersList();
+                    }
+                    // confo_variables.updateSmallIcons();
+                });
+
+                // Notification to others when a user muted video
+                room.addEventListener("user-video-unmuted", function (event) {
+                    // Handle UI here
+                    //confirm("Video is unmuted");
+                    if (room.clientId !== event.clientId) {
+                        confo_variables.updateUsersList();
+                    }
+                    // confo_variables.updateSmallIcons();
+                });
+
+                room.addEventListener("user-disconnected", function (event) {
+                    // One user is disconnected
+                    // event - User Information of disconnected user
+                    console.log("User-Disconnected---" + JSON.stringify(event));
+                    confo_variables.updateUsersList();
+                    // confo_variables.updateSmallIcons();
+                });
+
+
+                room.addEventListener('user-connected', (data) => {
+                    // console.log(data);
+                    confo_variables.updateUsersList();
+                    // confo_variables.updateSmallIcons();
+                });
+
+                // To receive message notification 
+                room.addEventListener("message-received", function (event) {
+                    var InMsg = event.message;
+                    if (InMsg.broadcast === true) {
+                        // Handle Public Message
+                        var chat_text_area = document.querySelector('.chat-textarea');
+                        var chat_item = document.createElement('div');
+                        chat_item.setAttribute('class', 'chat-item left');
+                        var desc = document.createElement('div');
+                        desc.setAttribute('class', 'desc');
+                        var head = document.createElement('div');
+                        head.setAttribute('class', 'head');
+                        head.innerHTML = `<p>${InMsg.sender}</p>`;
+                        desc.appendChild(head);
+                        var message = document.createElement('div');
+                        message.setAttribute('class', 'message');
+                        message.innerHTML = `<p>${InMsg.message}</p>`;
+                        desc.appendChild(message);
+                        var time_div = document.createElement('div');
+                        time_div.setAttribute('class', 'time');
+                        time_div.setAttribute('style', 'font-size: smaller');
+                        time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
+                        desc.appendChild(time_div);
+                        chat_item.appendChild(desc);
+                        chat_text_area.appendChild(chat_item);
+                        if (confo_variables.isChatViewOpen === false) {
+                            document.querySelector('#black_chat').style.display = 'none';
+                            document.querySelector('#red_chat').style.display = 'block';
+                            confo_variables.isRedchat = true;
+                        }
+                        else {
+                            document.querySelector('#black_chat').style.display = 'block';
+                            document.querySelector('#red_chat').style.display = 'none';
+                            confo_variables.isRedchat = false;
+                        }
+
+                    }
+                    else {
+                        // Handle Message from InMsg.sender
+                    }
+                });
+
+                room.addEventListener('room-locked', function (event) {
+                    confo_variables.isLock = true;
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Room is Locked');
+                });
+
+                room.addEventListener('room-unlocked', function (event) {
+                    confo_variables.isLock = false;
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Room is Unlocked');
+                });
+
+                room.addEventListener('canvas-started', function (event) {
+                    if (room.clientId !== event.message.clientId) {
+                        canvasStreamId = event.message.streamId;
+                        var st = room.remoteStreams.get(canvasStreamId);
+                        console.log('Started Share st...', st);
                         if (st.stream !== undefined) {
-                            presentationStarted = true;
-                            shareStart = true;
-                            toggleStreamView("show_stream_div", st, true);
+                            document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                            st.play("screen_share", confo_variables.PlayerOpt);
+                            document.querySelector('#player_102 video').removeAttribute('height');
+                        }
+                        confo_variables.isAnnotate = true;
+                    }
+                })
+
+                room.addEventListener("canvas-stopped", function (event) {
+                    if (room.clientId !== event.message.clientId) {
+                        document.querySelector('#player_102').remove();
+                        document.querySelector('.screen-inner').setAttribute('style', '');
+                        document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                        confo_variables.isAnnotate = false;
+                    }
+                })
+
+                // Notification to all when share starts
+                room.addEventListener("share-started", function (event) {
+                    // Get Stream# 101 which carries Screen Share 
+                    if (room.clientId !== event.message.clientId) {
+                        if (room.me.role === 'moderator') {
+                            if (confo_variables.isSpotLightM === true) {
+                                document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                var r = document.querySelector(`.screen-inner .remote-view`);
+                                var fluid = document.querySelector('.row-fluid');
+                                fluid.appendChild(r);
+                                var shared_stream = room.remoteStreams.get(101);
+                                shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+
+                            } else {
+                                console.log("share-started event----" + JSON.stringify(event));
+                                var shared_stream = room.remoteStreams.get(101);
+                                document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+                            }
+                            confo_variables.isShareReceived = true;
+                        } else {
+                            if (confo_variables.isSpotLightP === true) {
+                                document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                                var r = document.querySelector(`.screen-inner .remote-view`);
+                                var fluid = document.querySelector('.row-fluid');
+                                fluid.appendChild(r);
+                                var shared_stream = room.remoteStreams.get(101);
+                                shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+
+                            } else if (confo_variables.isSpotLightP === false && room.clientId === confo_variables.SpotLightClientId) {
+                                console.log("share-started event----" + JSON.stringify(event));
+                                var shared_stream = room.remoteStreams.get(101);
+                                document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+                            } else {
+                                var shared_stream = room.remoteStreams.get(101);
+                                document.querySelector('.custom-app-wrapper').classList.add('screen-open');
+                                shared_stream.play("screen_share", confo_variables.PlayerOpt); // Play in Player
+                            }
+                            confo_variables.isShareReceived = true;
                         }
                     }
-                }
-            });
+                });
 
+                room.addEventListener('spotlight-users', function (event) {
+                    // event json { "moderator_id": String, "users": [] }
+                    console.log("event--", event);
+                });
 
-            room.addEventListener("share-stopped", function (event) {
-                toggle_case = false;
+                // Notification to all when share stops
+                room.addEventListener("share-stopped", function (event) {
+                    // Handle UI here
+                    if (room.clientId !== event.clientId) {
+                        if (room.me.role === 'moderator') {
+                            if (confo_variables.isSpotLightM === true) {
+                                document.querySelector('#player_101').remove();
+                                document.querySelector('.screen-inner').setAttribute('style', '');
+                                document.querySelector('.custom-app-wrapper').classList.add('spotlight-open');
+                                var scr = document.querySelector('.screen-inner');
+                                var r = document.querySelector(`.remote_view_${parseInt(confo_variables.SpotLightUserStreamId)}`);
+                                scr.appendChild(r);
+                                console.log("screen-inner", scr);
+                            } else {
+                                document.querySelector('#player_101').remove();
+                                document.querySelector('.screen-inner').setAttribute('style', '');
+                                document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                            }
+                            confo_variables.isShareReceived = false;
 
-                var ua = navigator.userAgent.toLowerCase();
-                var ConfigSpecs = {
-                    maxVideoBW: 0,
-                };
-                if (ua.indexOf("safari") != -1) {
-                    if (ua.indexOf("chrome") > -1) {
-                        localStream.updateConfiguration(ConfigSpecs, function (result) { });
+                        }
+                        else {
+                            if (confo_variables.isSpotLightP === true) {
+                                document.querySelector('#player_101').remove();
+                                document.querySelector('.screen-inner').setAttribute('style', '');
+                                document.querySelector('.custom-app-wrapper').classList.add('spotlight-open');
+                                var scr = document.querySelector('.screen-inner');
+                                var r = document.querySelector(`.remote_view_${parseInt(confo_variables.SpotLightUserStreamId)}`);
+                                scr.appendChild(r);
+                                console.log("screen-inner", scr);
+                            } else if (confo_variables.isSpotLightP === false && room.clientId === confo_variables.SpotLightClientId) {
+                                document.querySelector('#player_101').remove();
+                                document.querySelector('.screen-inner').setAttribute('style', '');
+                                document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                            } else {
+                                document.querySelector('#player_101').remove();
+                                document.querySelector('.screen-inner').setAttribute('style', '');
+                                document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                            }
+                            confo_variables.isShareReceived = false;
+                        }
                     }
-                }
-                desktop_shared = false;
-                shareStart = false;
-                presentationStarted = false;
-                streamShare = null;
-                toggleStreamView("show_stream_div", null, false);
-            });
+                });
 
-            // room disconnected notification
-            room.addEventListener("room-disconnected", function (streamEvent) {
-                window.location.href = "/";
-                // to update the user list
-                userList();
-            });
-        }
-    });
-}
-function rejoin() {
-    window.location.reload();
-}
-function enable_stats() {
-    if (stats_enabled == false) {
-        room.subscribeStreamStatsForClient(localStream, true);
-        stats_enabled = true;
-    } else {
-        room.subscribeStreamStatsForClient(localStream, false);
-        stats_enabled = false;
-    }
-}
+                // Notification recording started to all
+                room.addEventListener("room-record-on", function (event) {
+                    // Recording started, Update UI
+                    // event.message.moderatorId = Moderator who stated recording.
+                    confo_variables.isRecording = true;
+                    document.querySelector('.recording-blink').style.visibility = 'visible';
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Recording is on');
+                });
 
-// self stream audio mute/unmute  function
-$("#self_aMute").click(function (e) {
-    if (audio_muted) {
-        if (room.mute) {
-            toastr.error("Your audio is muted by moderator");
-        } else {
-            localStream.unmuteAudio(function (arg) {
-                $("#self_aMute").removeClass("fa-microphone-slash");
-                $("#self_aMute").addClass("fa-microphone");
+                // Notification recording stopped to all
+                room.addEventListener("room-record-off", function (event) {
+                    // Recording stopped, Update UI
+                    // event.message.moderatorId = Moderator who stopped recording. 
+                    confo_variables.isRecording = false;
+                    document.querySelector('.recording-blink').style.visibility = 'hidden';
+                    toastr.options.positionClass = 'toast-top-right';
+                    toastr.info('Recording is off');
+                });
 
-                audio_muted = false;
-            });
-        }
-    } else {
-        localStream.muteAudio(function (arg) {
-            $("#self_aMute").removeClass("fa-microphone");
-            $("#self_aMute").addClass("fa-microphone-slash");
 
-            audio_muted = true;
+                // room disconnected notification
+                room.addEventListener("room-disconnected", function (streamEvent) {
+                    window.location.href = "/";
+                    // to update the user list
+                });
+
+            }
         });
-    }
-});
+    },
 
-function toggleStreamView(layout, stream, action) {
-    if (action) {
-        $("#call_div").hide();
-        $(".remote-name").hide();
-        $(`#${layout}`).html("");
-        $(`#${layout}`).show();
-        stream.play(layout, remoteOptions);
-        $("#self-view").append(
-            `<div id='user_view' style='margin-top: 25px; display: flex; justify-content: center;'></div>`
-        );
-        const rs = room.remoteStreams.get(ATList[0].streamId);
-        rs.play("user_view", optionsLocal);
-        $("#self-view, #user_view").css({
-            "min-height": "100px",
-            "min-width": "100px",
-            background: "#000",
+    muteLocalAudio: function () {
+        localStream.muteAudio(function (res) {
+            document.querySelector('#mute_btn').title = 'Unmute Audio'
+            document.querySelector('#mute-audio-pic').style.display = 'block';
+            document.querySelector('#unmute-audio-pic').style.display = 'none';
         });
-        $("#user_view").append(`<div id='remote-name'></div>`);
-        $("#remote-name").html(ATList[0].name);
-    } else {
-        $(`#${layout}`).hide();
-        $(`#user_view`).remove();
-        $(`#remote-name`).remove();
-        $("#call_div").show();
-        $(".remote-name").show();
-        $("#self-view").css({ "min-height": "150px", "min-width": "150px" });
-    }
-}
-// screen share function
-function screenShare() {
-    if (toggle_case === false) {
 
+    },
+    unmuteLocalAudio: function () {
+        localStream.unmuteAudio(function (res) {
+            document.querySelector('#mute_btn').title = 'Mute Audio'
+            document.querySelector('#mute-audio-pic').style.display = 'none';
+            document.querySelector('#unmute-audio-pic').style.display = 'block';
+        });
+    },
+    muteLocalVideo: function () {
+        localStream.muteVideo(function (res) {
+            document.querySelector('#mutev_btn').title = 'Unmute Video';
+            document.querySelector('#mute-video-pic').style.display = 'block';
+            document.querySelector('#unmute-video-pic').style.display = 'none';
+        });
+
+    },
+    unmuteLocalVideo: function () {
+        localStream.unmuteVideo(() => {
+            document.querySelector('#mutev_btn').title = 'Mute Video';
+            document.querySelector('#mute-video-pic').style.display = 'none';
+            document.querySelector('#unmute-video-pic').style.display = 'block';
+        });
+    },
+    shareScreen: function () {
+        if (
+            navigator.userAgent.indexOf("QQBrowser") > -1 &&
+            room.Connection.getBrowserVersion() < 72
+        ) {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.error(language.ss_unsupport_qq);
+            return;
+        } else if (
+            navigator.userAgent.indexOf("Chrome") > -1 &&
+            room.Connection.getBrowserVersion() < 72
+        ) {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.error(language.ss_unsupport_chrome_below72);
+            return;
+        }
+        else if (this.isAnnotate === true) {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.error('Annotation is on');
+            return;
+        }
+        this.streamShare = room.startScreenShare(function (result) {
+            document.querySelector('.cm-screen-share').title = 'Stop Share';
+            confo_variables.isShareStarted = true;
+            document.querySelector('.cm-screen-share').setAttribute('onclick', 'stopScreenShare()');
+        });
+        this.streamShare.addEventListener("stream-ended", function () {
+            room.stopScreenShare(this.streamShare, function (result) {
+                document.querySelector('.cm-screen-share').title = 'Start Share';
+                document.querySelector('.cm-screen-share').setAttribute('onclick', 'screenShare()');
+                confo_variables.isShareStarted = false;
+            });
+            // confo_variables.isShare = false;
+        })
+        console.log('streamShare-----' + JSON.stringify(this.streamShare));
+    },
+    stopShareScreen: function () {
+        // Stop the Shared Screen
+        room.stopScreenShare(this.streamShare, function (result) {
+            // confo_variables.isShare = false;
+            document.querySelector('.cm-screen-share').title = 'Start Share';
+        });
+    },
+
+    annotateUser: function (_this) {
 
         if (
             navigator.userAgent.indexOf("QQBrowser") > -1 &&
@@ -809,434 +689,199 @@ function screenShare() {
         ) {
             toastr.error(language.ss_unsupport_chrome_below72);
             return;
-        } else if (isAnnotate) {
-            toastr.error("Please stop the Annotate to start Screen Share.");
+        } else if (this.before_annotate_id !== '') {
+            toastr.error('Another participant is annotated');
             return;
         }
+        var id_annotate_div = _this.id.replace('a_', '');
+        room.annotateToolAction('draw', true);
+        annotateStreamID = room.remoteStreams.get(parseInt(id_annotate_div));
 
-        if (presentationStarted === false) {
-            desktop_shared = true;
-            streamShare = room.startScreenShare(function (rs) {
-                if (rs.result === 0) {
-                    presentationStarted = true;
-                    shareStart = true;
-                    $("#share_screen_btn").prop("title", "Stop Share");
-                } else if (rs.result === 1151) {
-                    desktop_shared = false;
-                    toastr.error(rs.error);
-                } else if (rs.result === 1144) {
-                    desktop_shared = false;
-                    toastr.error(rs.error);
-                } else if (rs.result === 1150) {
-                    desktop_shared = false;
-                    $("#extension-dialog").modal("toggle");
-                } else {
-                    desktop_shared = false;
-                    toastr.error("Screen share not supported");
+        room.startAnnotation(annotateStreamID, function (rs) {
+            // if (rs.result === 0) {
+            //     isPresentating = true;
+            //     shareStart = true;
+            //     $("#share_screen_btn").prop("title", "Stop Share").addClass('blink-image');
+            //     $('#screenShareStarted').show();
+            // } else if (rs.result === 1151) {
+            //     desktop_shared = false;
+            //     toastr.error(rs.error);
+            // } else if (rs.result === 1144) {
+            //     desktop_shared = false;
+            //     // toastr.error(rs.error);
+            // } else if (rs.result === 1150) {
+            //     desktop_shared = false;
+            //     $("#extension-dialog").modal("toggle");
+            // } else {
+            //     desktop_shared = false;
+            //     toastr.error("Screen share not supported");
+            // }
+        });
+        document.querySelector(`#a_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
+        document.querySelector(`#s_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
+        var height = document.querySelector('.video-inner').offsetHeight;
+        var width = document.querySelector('.video-inner').offsetWidth;
+
+        // var height_value = height.replace('px','');
+        document.querySelector(`#draw_veneer2`).setAttribute('height', `${height}`);
+        document.querySelector(`#stream${parseInt(id_annotate_div)}_veneer`).setAttribute('height', `${height}`);
+        document.querySelector(`#draw_veneer2`).setAttribute('width', `${width}`);
+        document.querySelector(`#stream${parseInt(id_annotate_div)}_veneer`).setAttribute('width', `${width}`);
+        this.before_annotate_id = _this.id;
+        this.isAnnotate = true;
+        document.getElementById(_this.id).setAttribute('onclick', 'removeAnnotation(this)');
+        document.getElementById(_this.id).classList.replace('annotate', 'remove-annotate');
+
+    },
+    stopAnnotation: function (_this) {
+        room.stopAnnotation(function (res) {
+            if (res.result == 0) {
+                // $("#share_screen_btn").prop("title", "Start Share").removeClass('blink-image');
+
+            }
+        });
+        this.isAnnotate = false;
+        this.before_annotate_id = '';
+        document.getElementById(_this.id).setAttribute('onclick', 'annotate(this)');
+        document.getElementById(_this.id).classList.replace('remove-annotate', 'annotate');
+
+
+    },
+
+    updateUsersList: function () {
+        var list = '';
+        var chilren_user_list = document.querySelector(".participants-inner");
+        var user_list_length = room.userList.size;
+        var initial_user = 1;
+        var part_item = '';
+        document.querySelector('.participants-inner').innerHTML = '';
+        room.userList.forEach((user, clientId) => {
+            if (clientId !== room.clientId) {
+                console.log("each - user---", user.name);
+                part_item = document.createElement('div');
+                part_item.setAttribute('class', 'participants-item');
+                part_item.setAttribute('style', 'justify-content: space-evenly')
+                var part_desc = document.createElement('div');
+                part_desc.setAttribute('class', 'participant-desc');
+                list = `<div class="head" id="user_${clientId}"><p>${user.name}</p></div>`;
+                part_desc.innerHTML = list;
+
+
+                var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
+                var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
+                var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
+                var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
+                if (user.audioMuted === true) {
+                    small_unmute_audio.style.display = 'none';
+                    small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
+                    small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+                    small_mute_audio.style.display = 'block';
+                    small_mute_audio.setAttribute('id', `mute-audio-list-${clientId}`);
+                    small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
                 }
-            });
-        } else if (streamShare) {
-            room.stopScreenShare(function (res) {
-                if (res.result == 0) {
-                    $("#share_screen_btn").prop("title", "Start Share");
-                    presentationStarted = false;
-                    shareStart = false;
-                    streamShare = null;
+                else {
+                    small_unmute_audio.style.display = 'block';
+                    small_unmute_audio.setAttribute('id', `unmute-audio-list-${clientId}`);
+                    small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
+
+                    small_mute_audio.style.display = 'none';
+                    small_mute_audio.setAttribute('id', `mute-audio-list-${clientId}`);
+                    small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
+
                 }
+                if (user.videoMuted === true) {
+                    small_unmute_video.style.display = 'none';
+                    small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
+                    small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                    small_mute_video.style.display = 'block';
+                    small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
+                    small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+
+                }
+                else {
+                    small_unmute_video.style.display = 'block';
+                    small_unmute_video.setAttribute('id', `unmute-video-list-${clientId}`);
+                    small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
+
+                    small_mute_video.style.display = 'none';
+                    small_mute_video.setAttribute('id', `mute-video-list-${clientId}`);
+                    small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+
+                }
+
+
+                part_item.appendChild(part_desc);
+
+                var icons_div = document.createElement('div');
+                icons_div.setAttribute('style', 'display:flex')
+                icons_div.appendChild(small_unmute_audio);
+                icons_div.appendChild(small_mute_audio);
+                icons_div.appendChild(small_unmute_video);
+                icons_div.appendChild(small_mute_video);
+
+                part_item.appendChild(icons_div);
+
+                chilren_user_list.appendChild(part_item);
+                document.querySelector('.participants-inner').appendChild(part_item);
+            }
+        }
+        );
+    },
+    chatSendToOthers: function () {
+        var message_to_send = document.querySelector('textarea').value.trim();
+        if (message_to_send !== "") {
+            var chat_text_area = document.querySelector('.chat-textarea');
+            var chat_item = document.createElement('div');
+            chat_item.setAttribute('class', 'chat-item right');
+            var desc = document.createElement('div');
+            desc.setAttribute('class', 'desc');
+            var head = document.createElement('div');
+            head.setAttribute('class', 'head');
+            head.innerHTML = `<p>${room.me.name}</p>`;
+            desc.appendChild(head);
+            var message = document.createElement('div');
+            message.setAttribute('class', 'message');
+            message.innerHTML = `<p>${message_to_send}</p>`;
+            desc.appendChild(message);
+            var time_div = document.createElement('div');
+            time_div.setAttribute('class', 'time');
+            time_div.setAttribute('style', 'font-size: smaller');
+            time_div.innerHTML = `<p>${confo_variables.formatAMPM(new Date)}</p>`;
+            desc.appendChild(time_div);
+            chat_item.appendChild(desc);
+            chat_text_area.appendChild(chat_item);
+            room.sendMessage(message_to_send, true, [], function (data) {
+                console.log('Data to send is ---' + JSON.stringify(data));
+                // Message sent
+                document.querySelector('textarea').value = '';
+
             });
         }
-
-        if (streamShare) {
-            streamShare.addEventListener("stream-ended", function (event) {
-                room.stopScreenShare(function (res) {
-                    if (res.result == 0) {
-                        $("#share_screen_btn").prop("title", "Start Share");
-                        $(".SSicon").removeClass("blink-image");
-                        presentationStarted = false;
-                        streamShare = null;
-                    }
-                });
-            });
-        }
-    }
-    else {
-
-        alert("Streaming and screen sharing isn't possible at same time")
-
-
-    }
-}
-// Sending and receiving Chat messages and display on screen
-function plotChat(obj) {
-    var f_name = obj.username;
-    var name = obj.username.slice(0, 1);
-    var template =
-        ' <li class="left clearfix">' +
-        '<span class="chat-img pull-left">' +
-        '<div  class="img-circle red" >' +
-        name +
-        "</div>" +
-        "</span>" +
-        '<div class="chat-body clearfix">' +
-        '<div class="header1">' +
-        '<strong class="primary-font">' +
-        f_name +
-        "</strong> " +
-        " </div>" +
-        "<p>" +
-        obj.msg +
-        " </p>" +
-        "</div>" +
-        " </li>";
-
-    var elem = document.getElementById("chat-message");
-    $(template).appendTo(elem);
-}
-function sendChat(event) {
-    if (event.keyCode === 13) {
-        addText();
-    }
-}
-function addText() {
-    var text = document.getElementById("chat-text-area").value;
-    var elem = document.getElementById("chat-message");
-
-    if (/<[a-z][\s\S]*>/i.test(text)) {
-        text = "'" + text + "'";
-    }
-    if (text !== "") {
-        var template = createChatText(text);
-        $(template).appendTo(elem);
-        document.getElementById("chat-text-area").value = "";
-        sendChatToServer(text);
-    }
-}
-function sendChatToServer(text) {
-    room.sendMessage(text, true, [], function () { });
-}
-function createChatText(text) {
-    var f_name = room.me.name;
-    var name = room.me.name.slice(0, 1);
-    var template =
-        '<li class="right clearfix"><span class="chat-img pull-right">' +
-        '<div  class="img-circle sky_blue" >Me</div>' +
-        "</span>" +
-        '<div class="chat-body clearfix">' +
-        ' <div class="header1">' +
-        ' <strong class="pull-right primary-font">' +
-        f_name +
-        "</strong><br/>" +
-        " </div>" +
-        "<p>" +
-        text +
-        " </p>" +
-        "</div>" +
-        "</li>";
-
-    return template;
-}
-
-// video Mute function
-
-$("#self_vMute").click(function (e) {
-    videoMute();
-});
-
-var muteUnmuteBtn = document.querySelector("#self_vMute");
-
-function enableMuteButton() {
-    muteUnmuteBtn.removeAttribute("disabled");
-    muteUnmuteBtn.style.cursor = "pointer";
-    muteUnmuteBtn.style.pointerEvents = "auto";
-}
-function videoMute() {
-    muteUnmuteBtn.style.cursor = "wait";
-    muteUnmuteBtn.style.pointerEvents = "none";
-    muteUnmuteBtn.disabled = true;
-    muteUnmuteBtn.setAttribute("disabled", "disabled");
-
-    if (video_muted) {
-        localStream.unmuteVideo(function (res) {
-            if (res.result === 0) {
-                // localStream.play("self-view", optionsLocal);
-                $("#self_vMute").removeClass("fa-video-slash");
-                $("#self_vMute").addClass("fa-video");
-                video_muted = false;
-                enableMuteButton();
-            } else if (res.result === 1140) {
-                toastr.error(res.error);
-                enableMuteButton();
+        document.querySelector('textarea').value = '';
+    },
+    startRecord: function () {
+        room.startRecord(function (result, error) {
+            console.log('result---', result);
+            if (result.result == 0) {
+                // Recording started
+                document.querySelector('.recording-btn').setAttribute('onclick', 'stopRecording()');
             }
         });
-    } else {
-        localStream.muteVideo(function (res) {
-            if (res.result === 0) {
-                $("#self_vMute").removeClass("fa-video");
-                $("#self_vMute").addClass("fa-video-slash");
-                video_muted = true;
-                enableMuteButton();
-            } else if (res.result === 1140) {
-                enableMuteButton();
+    },
+    stopRecord: function () {
+        room.stopRecord(function (result, error) {
+            if (result.result == 0) {
+                // Recording stopped
+                document.querySelector('.recording-btn').setAttribute('onclick', 'startRecording()');
             }
         });
-    }
-}
-
-
-
-
-//   socket.emit("disconnect-call", {});
-// $("#disconnect_call").on("click", function () {
-//     room.disconnect();
-// });
-
-
-
-function toggleChat() {
-    ischatViewOpen ? (ischatViewOpen = false) : (ischatViewOpen = true);
-    if (ischatViewOpen) {
-        $("#chat_window-popup").show();
-        $("#chat-tag").hide();
-    } else {
-        $("#chat_window-popup").hide();
-    }
-}
-
-
-
-function updateChatHeight() {
-    var sitebar_height =
-        $(window).innerHeight() -
-        $(".card-header").innerHeight() -
-        $(".card-block").innerHeight();
-    $("#frame").css("height", sitebar_height - 118);
-}
-
-function roomLock() {
-    if (isLocked === false) {
-        room.lock();
-
-    } else if (isLocked === true) {
-        room.unlock();
-    }
-}
-
-function switchDevice() {
-    if (toggleSwitch === false) {
-        document.querySelector('#switch-bar').style.display = "block";
-        toggleSwitch = true;
-    } else {
-        document.querySelector('#switch-bar').style.display = "none";
-        toggleSwitch = false;
-    }
-}
-
-function switchmicro(element) {
-    localStream.switchMicrophone(localStream, element.id, function (stream) {
-        if (stream && stream.getID) {
-            localStream = stream; // LocalStream updated   
-            console.log("device changed");
-        }
-        else {
-            // Failed to switch
-            console.log("failed switch")
-        }
-    });
-}
-
-function switchcam(element) {
-    localStream.switchCamera(localStream, element.id, function (stream) {
-        if (stream && stream.getID) {
-            localStream = stream; // LocalStream updated  
-            console.log("device changed");
-        }
-        else {
-            // Failed to switch
-            console.log("failed switch")
-        }
-    });
-}
-
-function switchspeaker(element) {
-    room.switchSpeaker(element.id, function (res) {
-        if (res.result == 0) {
-            // Switching successful 
-            console.log("speaker changed");
-        }
-        else {
-            // Failed to switch
-            console.log("failed to switch speaker")
-        }
-    });
-}
-
-function userList() {
-    let userlist = '';
-    room.userList.forEach(function (user, clientId) {
-        userlist += `<li class="list-group-item" id="user_${clientId}">${user.name}(${user.role})</li>`
-    });
-    document.getElementById('user-list').innerHTML = userlist;
-}
-
-function toggleList() {
-    if (isListVisible === false) {
-        document.getElementById('user-bar').style.display = "block";
-        isListVisible = true;
-    }
-    else {
-        document.getElementById('user-bar').style.display = "none";
-        isListVisible = false;
-    }
-
-}
-
-function muteAudio() {
-    if (isAudioMute === false) {
-        // localStream.muteAudio(function (res) {
-        // Audio muted. Handle UI 
-
-        document.querySelector('#mute-audio-pic').style.display = 'block';
-        document.querySelector('#unmute-audio-pic').style.display = 'none';
-
-        // document.querySelector('#mute-audio-pic').classList.add('fa-microphone-slash');
-        // });
-        isAudioMute = true;
-    } else if (isAudioMute === true) {
-        // localStream.unmuteAudio(() => {
-        //Audio Unmuted. Handle UI
-        document.querySelector('#mute-audio-pic').style.display = 'none';
-        document.querySelector('#unmute-audio-pic').style.display = 'block';
-
-        // document.querySelector('#mute-pic').src="../img/mute.png";
-        // });
-        isAudioMute = false;
-    }
-}
-
-function muteVideo() {
-    if (isVideoMute === false) {
-        // localStream.muteVideo(function (res) {
-        // Video muted. Handle UI here
-        document.querySelector('#mute-video-pic').style.display = 'block';
-        document.querySelector('#unmute-video-pic').style.display = 'none';
-        // });
-        isVideoMute = true;
-
-    } else if (isVideoMute === true) {
-        // localStream.unmuteVideo(() => {
-        document.querySelector('#mute-video-pic').style.display = 'none';
-        document.querySelector('#unmute-video-pic').style.display = 'block';
-        // });
-        isVideoMute = false;
-    }
-}
-
-var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
-// var isFirefox = typeof InstallTrigger !== 'undefined';
-// var startedPresentation=false;
-// var shared_desktop=false;
-
-
-function scrnShr() {
-    if (isChrome == true && room.Connection.getBrowserVersion() < 72) {
-        alert("Browser Unsupported, Please download latest chrome version");
-        return;
-    } else if (isAnnotate) {
-        alert("Please stop the Annotate to start Screen Share.");
-        return;
-    }
-
-    if (presentationStarted === false) {
-        desktop_shared = true;
-        streamShare = room.startScreenShare((res) => {
-            if (res.result === 0) {
-                presentationStarted = true;
-                shareStart = true;
-                document.querySelector('#share_screen_btn').setAttribute("title", "Stop Share");
-            } else if (res.result === 1151) {
-                desktop_shared = false;
-                alert("Screen Share is on by other. Concurrent Screen Shares not supported");
-            } else if (res.result === 1143) {
-                desktop_shared = false;
-                alert("Device not found. Screen Share disabled at OS");
-            } else {
-                desktop_shared = false;
-                alert("Screen Share is not supported");
-            }
-
-        });
-
-    }
-    else if (streamShare) {
-        room.stopScreenShare((res) => {
-            if (res.result === 0) {
-                document.querySelector('#share_screen_btn').setAttribute("title", "Start Share");
-                presentationStarted = false;
-                shareStart = false;
-                streamShare = null;
-            }
-        })
-    }
-
-
-}
-
-
-function startChat() {
-    if (isChatShow === false) {
-        document.querySelector('#chat-bar').style.display = "block";
-        isChatShow = true;
-    }
-    else if (isChatShow === true) {
-        document.querySelector('#chat-bar').style.display = "none";
-        isChatShow = false;
-    }
-}
-
-
-document.getElementById('send_btn').addEventListener("keydown", function (event) {
-    event.preventDefault();
-});
-function addTexts() {
-    var temp = document.querySelector('#chat-text').value;
-    console.log("temp", temp);
-    room.sendMessage(temp, true, [], function (data) {
-        console.log("data++++" + JSON.stringify(data));
-    });
-    document.querySelector('#chat-text').value = "";
-}
-
-function recordFunc() {
-    if (isRecordOn === false) {
-        isRecordOn = true;
-
-        // To start Recording
-
-        room.startRecord((result, error) => {
-            if (result === 0) {
-                ///record start
-                console.log("Record is starting");
-            }
-        });
-
-    } else if (isRecordOn === true) {
-        isRecordOn = false;
-
-        // To stop Recording
-
-        room.stopRecord((result, error) => {
-            if (result === 0) {
-                //Record Stop
-                console.log("Recording has stopped");
-            }
-        });
-    }
-}
-
-function mediaStats() {
-    if (isStatShow === false) {
-        isStatShow = true;
-        room.subscribeMediaStats('display', function (resp) {
+    },
+    mediaStatistics: function (value) {
+        room.subscribeMediaStats(value, function (resp) {
             // response is a JSON, e.g.
             /*
             { 	"result": 0,  
@@ -1244,109 +889,295 @@ function mediaStats() {
             }
             */
         });
-    } else if (isStatShow === true) {
-        isStatShow = false;
-        room.subscribeMediaStats('disable', () => {
+    },
+    roomLock: function () {
+        room.lock();
+        document.querySelector('.lock').title = 'Unlock Room';
+        document.querySelector('#lock_btn').style.display = 'block';
+        document.querySelector('#unlock_btn').style.display = 'none';
+    },
+    roomUnlock: function () {
+        room.unlock();
+        document.querySelector('.lock').title = 'Lock Room';
+        document.querySelector('#lock_btn').style.display = 'none';
+        document.querySelector('#unlock_btn').style.display = 'block';
+    },
+    cameraSwitch: function (_this) {
+        localStream.switchCamera(localStream, _this.id, function (Stream) {
+            if (Stream && Stream.getID) {
+                localStream = Stream; // LocalStream updated   
+            }
+            else if (Stream.message === 'success') {
 
+            }
+            else {
+                // Failed to switch
+                // toastr.options.positionClass = 'toast-bottom-right';
+                // toastr.error("Couldn't get a stream");
+            }
         });
+    },
+    microphoneSwitch: function (_this) {
+        localStream.switchMicrophone(localStream, _this.id, function (Stream) {
+            if (Stream && Stream.getID) {
+                localStream = Stream; // LocalStream updated   
+            }
+            else if (Stream.message === 'success') {
+
+            }
+            else {
+                // toastr.options.positionClass = 'toast-bottom-right';
+                // toastr.error("Couldn't get a stream");
+            }
+        });
+    },
+    formatAMPM: function (date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var strTime = hours + ':' + minutes + ' ' + ampm;
+        return strTime;
+    },
+    spot_light: function (param) {
+        if (this.isAnnotate === true) {
+            toastr.options.positionClass = 'toast-bottom-right';
+            toastr.error("Annotation is on");
+            return;
+        }
+        var str_id = param.id.replace('s_', '');
+        room.addSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
+            // resp json { "result": Number, "clients": [] }
+            console.log("resp", resp);
+            confo_variables.isSpotLightM = true;
+        })
+    },
+    spotlightRemove: function (param) {
+        // To remove users from Spotlight
+        var str_id = param.id.replace('s_', '');
+        room.removeSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
+            confo_variables.isSpotLightM = false;
+
+        })
+    },
+    updateSmallIcons: function () {
+        room.activeTalkerList.forEach((item, index) => {
+            try {
+                if (item.mediatype === 'audio') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'block';
+                }
+                else if (item.mediatype === 'audiovideo') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'none';
+                }
+                else if (item.mediatype === 'video') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'none';
+                }
+                else if (item.mediatype === 'none') {
+                    document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-audio-small-${item.clientId}`).style.display = 'block';
+                    document.querySelector(`#unmute-video-small-${item.clientId}`).style.display = 'none';
+                    document.querySelector(`#mute-video-small-${item.clientId}`).style.display = 'block';
+
+                }
+
+            } catch (error) {
+
+            }
+        })
+    },
+    copy: function () {
+        var inp = document.createElement('input');
+        document.body.appendChild(inp);
+        inp.value = window.location.origin + "?invite=" + this.roomId;
+        inp.select();
+        document.execCommand('copy');
+        inp.remove();
+    },
+    callDisconnect: function () {
+        window.location.href = window.location.origin;
+    },
+
+
+
+}
+
+// To check the Permission of microphone , camera and speaker
+
+EnxRtc.getDevices(function (arg) {
+    let camlist = '';
+    let miclist = '';
+    var camera_desc = document.querySelector('.camera-desc .head');
+    var microphone_desc = document.querySelector('.microphone-desc .head');
+
+    if (arg.result === 0) {
+        arg.devices.cam.forEach(element => {
+            var camId = element.deviceId.toString();
+            camlist += `<input type="radio" id="${element.deviceId}" name="camera" value="${element.label}" onclick="switchcam(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+        });
+
+        arg.devices.mic.forEach(element => {
+            var micId = element.deviceId.toString();
+            miclist += `<input type="radio" id="${element.deviceId}" name="mic" value="${element.label}" onclick="switchmic(this)"> <label for="${element.deviceId}">${element.label}</label><br>`
+        });
+
+        camera_desc.innerHTML = camlist;
+        microphone_desc.innerHTML = miclist;
+    } else if (arg.result === 1145) {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.error("Your media devices might be in use with some other application.");
+        // $(".error_div").html(
+        //     "Your media devices might be in use with some other application."
+        // );
+        // $(".error_div").show();
+        return false;
+    } else {
+        $(".error_div").show();
+
+        return false;
+    }
+});
+
+
+// Connect to the Room using token
+let searchParams = new URLSearchParams(window.location.search);
+let token = searchParams.get('token');
+confo_variables.ConnectCall(token);
+
+function muteAudio() {
+    confo_variables.muteLocalAudio();
+    confo_variables.isAudioMute = true;
+}
+
+function unmuteAudio() {
+    confo_variables.unmuteLocalAudio();
+    confo_variables.isAudioMute = false;
+}
+
+
+function muteVideo() {
+    confo_variables.muteLocalVideo();
+    confo_variables.isVideoMute = true;
+}
+
+function unmuteVideo() {
+    confo_variables.unmuteLocalVideo();
+    confo_variables.isVideoMute = false;
+}
+
+function disconnectCall() {
+    confo_variables.callDisconnect();
+}
+
+function screenShare() {
+    if (confo_variables.isShareReceived !== true) {
+        confo_variables.shareScreen();
+    }
+    else {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.info('Someone is sharing screen');
     }
 }
 
-var isScreenShared = false;
+function stopScreenShare() {
+    confo_variables.stopShareScreen();
+    document.querySelector('.cm-screen-share').setAttribute('onclick', 'screenShare()');
 
-// function shareScreen(){
+}
 
-//     if (isChrome == true && room.Connection.getBrowserVersion() < 72) {
-//         alert("Chrome requires additional extension to support screen share");
-//         return;
-//     } else if (isAnnotate) {
-//         alert("Please stop the Annotate to start Screen Share.");
-//         return;
-//     }
+function chatSend() {
+    confo_variables.chatSendToOthers();
+}
 
-//     if(isScreenShared===false){
-//         isScreenShared=true;
-//         streamShare = room.startScreenShare( function(result){ 
-//             console.log(result);
-//         });
-//     }
-//     else if(isScreenShared===true){
-//         isScreenShared=false;
-//         room.stopScreenShare( streamShare, function(result) {
-//         });
-//     }
-
-// }
-
-
-
-function shareScreen() {
-    if (toggle_case === false) {
-
-        if (
-            navigator.userAgent.indexOf("QQBrowser") > -1 &&
-            room.Connection.getBrowserVersion() < 72
-        ) {
-            toastr.error(language.ss_unsupport_qq);
-            return;
-        } else if (
-            navigator.userAgent.indexOf("Chrome") > -1 &&
-            room.Connection.getBrowserVersion() < 72
-        ) {
-            toastr.error(language.ss_unsupport_chrome_below72);
-            return;
-        } else if (isAnnotate) {
-            toastr.error("Please stop the Annotate to start Screen Share.");
-            return;
-        }
-
-        if (presentationStarted === false) {
-            desktop_shared = true;
-            streamShare = room.startScreenShare(function (rs) {
-                if (rs.result === 0) {
-                    presentationStarted = true;
-                    shareStart = true;
-                    $("#share_screen_btn").prop("title", "Stop Share");
-                } else if (rs.result === 1151) {
-                    desktop_shared = false;
-                    toastr.error(rs.error);
-                } else if (rs.result === 1144) {
-                    desktop_shared = false;
-                    toastr.error(rs.error);
-                } else if (rs.result === 1150) {
-                    desktop_shared = false;
-                    $("#extension-dialog").modal("toggle");
-                } else {
-                    desktop_shared = false;
-                    toastr.error("Screen share not supported");
-                }
-            });
-        } else if (streamShare) {
-            room.stopScreenShare(function (res) {
-                if (res.result == 0) {
-                    $("#share_screen_btn").prop("title", "Start Share");
-                    presentationStarted = false;
-                    shareStart = false;
-                    streamShare = null;
-                }
-            });
-        }
-
-        if (streamShare) {
-            streamShare.addEventListener("stream-ended", function (event) {
-                room.stopScreenShare(function (res) {
-                    if (res.result == 0) {
-                        $("#share_screen_btn").prop("title", "Start Share");
-                        $(".SSicon").removeClass("blink-image");
-                        presentationStarted = false;
-                        streamShare = null;
-                    }
-                });
-            });
-        }
+function startRecording() {
+    if (confo_variables.isRecording === false) {
+        confo_variables.startRecord();
     }
     else {
-        alert("Streaming and screen sharing isn't possible at same time")
 
     }
+}
+
+function stopRecording() {
+    if (confo_variables.isRecording === true) {
+        confo_variables.stopRecord();
+    }
+    else {
+
+    }
+}
+
+function showMediaStats() {
+    confo_variables.mediaStatistics('display');
+    document.querySelector('.media-stats').setAttribute('onclick', 'stopMediaStats()');
+}
+
+function stopMediaStats() {
+    confo_variables.mediaStatistics('disable');
+    document.querySelector('.media-stats').setAttribute('onclick', 'showMediaStats()');
+}
+
+function lockRoom() {
+    confo_variables.roomLock();
+
+}
+
+function unlockRoom() {
+    confo_variables.roomUnlock();
+
+}
+
+function switchcam(_this) {
+    confo_variables.cameraSwitch(_this);
+}
+
+function switchmic(_this) {
+    confo_variables.microphoneSwitch(_this);
+}
+
+function spotlight(_this) {
+    if (confo_variables.isSpotLightM === false) {
+        confo_variables.spot_light(_this);
+    }
+    else {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.error('Another participant is spotlight');
+    }
+}
+
+function removeSpotlight(_this) {
+    if (confo_variables.isSpotLightM === true) {
+        confo_variables.spotlightRemove(_this);
+    }
+}
+
+
+function annotate(_this) {
+    if (confo_variables.isShareReceived || confo_variables.isSpotLightM || confo_variables.isShareStarted) {
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.error('Screen Share or Spotlight is on');
+    }
+    else {
+        confo_variables.annotateUser(_this);
+    }
+}
+
+function removeAnnotation(_this) {
+    confo_variables.stopAnnotation(_this);
+}
+
+function copyUrl() {
+    toastr.options.positionClass = 'toast-top-right';
+    toastr.info('URL Copied');
+    confo_variables.copy();
 }
