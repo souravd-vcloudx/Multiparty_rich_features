@@ -1,6 +1,7 @@
 // All variables are stored in object which are used in this file
 
 var confo_variables = {
+    activeTalkerInfo: {},
     roomId: '',
     searchParams: '',
     previousToggleClass: '',
@@ -17,6 +18,7 @@ var confo_variables = {
     before_annotate_id: '',
     annotateStreamId: '',
     annotateClientId: '',
+    face: 'environment',
     isVideoMute: false,
     isRedchat: false,
     isChatViewOpen: false,
@@ -49,6 +51,19 @@ var confo_variables = {
     },
     ConnectCall: function (token) {
         EnxRtc.Logger.setLogLevel(5);
+        // if (navigator.userAgentData.mobile) {
+        //     console.log("yes I am from mobile");
+        //     confo_variables.config.facingMode = 'user';
+        //     console.log("config====" + JSON.stringify(confo_variables.config));
+        //     console.log("facingMode ====>" + confo_variables.config.facingMode);
+        //     document.querySelector('#switch_devices').style.display = 'none';
+        //     document.querySelector('#switch_cam').style.display = 'block';
+
+        // }
+        // else {
+        //     document.querySelector('#switch_devices').style.display = 'block';
+        //     document.querySelector('#switch_cam').style.display = 'none';
+        // }
         localStream = EnxRtc.joinRoom(token, {
             video: this.config.video, audio: this.config.audio, data: this.config.data, videoSize: this.VideoSize[this.video_type],
         }, function (success, error) {
@@ -59,6 +74,8 @@ var confo_variables = {
                 // Look for error.type and error.msg.name to handle Exception
                 if (error.type == "media-access-denied") {
                     // Media Media Inaccessibility
+                    toastr.options.positionClass = 'toast-bottom-right';
+                    toastr.error('Could not start video source');
                 } else if (error.error === 4122) {
                     toastr.options.positionClass = 'toast-bottom-right';
                     toastr.error('Room is locked');
@@ -88,6 +105,24 @@ var confo_variables = {
                 isModerator = room.me.role == "moderator" ? true : false;
 
                 room_name.innerHTML = success.roomData.name;
+
+                if (isModerator) {
+                    // var spot_div = document.createElement('div');
+                    // spot_div.setAttribute('class', `spotlight`);
+                    // spot_div.setAttribute('id', `s_self-view`);
+                    // spot_div.setAttribute('style', "z-index:100 ;");
+                    // spot_div.setAttribute('onclick', 'spotlight(this)');
+                    // spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+                    // spot_div.setAttribute('title', 'Spotlight');
+                    // document.querySelector('#self-view').appendChild(spot_div);
+                    var video_caption = document.createElement('div');
+                    video_caption.setAttribute('class', 'video-caption');
+                    var remote_name_p = document.createElement('p');
+                    remote_name_p.innerHTML = `${room.me.name}`;
+                    console.log("name is --=--", room.me.name);
+                    video_caption.appendChild(remote_name_p);
+                    document.querySelector('#self-view').appendChild(video_caption);
+                }
 
                 if (!isModerator) {
                     document.querySelector('#invite_url').style.display = 'none';
@@ -242,6 +277,7 @@ var confo_variables = {
                             }
                         }
                         ATList_id[index] = `${ATList[index].streamId}`;
+                        confo_variables.activeTalkerInfo[ATList[index].streamId] = { 'name': ATList[index].name, 'clientId': ATList[index].clientId, 'mediatype': ATList[index].mediatype };
                     });
                     var difference = ATList_id.length > div_ATList.length ? ATList_id.filter(x => div_ATList.indexOf(x) === -1) : div_ATList.filter(x => ATList_id.indexOf(x) === -1);
 
@@ -269,7 +305,7 @@ var confo_variables = {
                                     spot_div.setAttribute('style', "z-index:100 ;");
                                     spot_div.setAttribute('onclick', 'spotlight(this)');
                                     spot_div.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-                                    spot_div.setAttribute('title', 'Spotlight User');
+                                    spot_div.setAttribute('title', 'Spotlight');
                                     remote_video_item.appendChild(spot_div);
                                     spot_and_annotate.appendChild(spot_div);
 
@@ -294,36 +330,40 @@ var confo_variables = {
                                 }
 
                                 var remote_video_inner = document.createElement('div');
-                                remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                remote_video_inner.setAttribute('class', `video-inner video-inner-copy remote_${confo_variables.activeTalkerInfo[parseInt(item)].clientId}`);
                                 remote_video_inner.setAttribute('id', `${item}`);
                                 var video_caption = document.createElement('div');
                                 video_caption.setAttribute('class', 'video-caption');
                                 var remote_name_p = document.createElement('p');
-                                remote_name_p.innerHTML = `${room.activeTalkerList.get(parseInt(item)).name}`;
-                                console.log("name is --=--", room.activeTalkerList.get(parseInt(item)).name);
+                                remote_name_p.innerHTML = `${confo_variables.activeTalkerInfo[parseInt(item)].name}`;
+                                console.log("name is --=--", confo_variables.activeTalkerInfo[parseInt(item)].name);
                                 video_caption.appendChild(remote_name_p);
 
+                                var video_icon = document.createElement('div');
+                                video_icon.setAttribute('class', 'small_video_icon');
+
                                 var small_unmute_audio = document.querySelector('#unmute-audio-small').cloneNode();
-                                small_unmute_audio.setAttribute('id', `unmute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_audio.setAttribute('id', `unmute-audio-small-${confo_variables.activeTalkerInfo[parseInt(item)].clientId}`);
                                 small_unmute_audio.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
 
                                 var small_mute_audio = document.querySelector('#mute-audio-small').cloneNode();
-                                small_mute_audio.setAttribute('id', `mute-audio-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_audio.setAttribute('id', `mute-audio-small-${confo_variables.activeTalkerInfo[parseInt(item)].clientId}`);
                                 small_mute_audio.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line>< path d = "M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" ></path ><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'
 
                                 var small_unmute_video = document.querySelector('#unmute-video-small').cloneNode();
-                                small_unmute_video.setAttribute('id', `unmute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_unmute_video.setAttribute('id', `unmute-video-small-${confo_variables.activeTalkerInfo[parseInt(item)].clientId}`);
                                 small_unmute_video.innerHTML = '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'
 
                                 var small_mute_video = document.querySelector('#mute-video-small').cloneNode();
-                                small_mute_video.setAttribute('id', `mute-video-small-${room.activeTalkerList.get(parseInt(item)).clientId}`);
+                                small_mute_video.setAttribute('id', `mute-video-small-${confo_variables.activeTalkerInfo[parseInt(item)].clientId}`);
                                 small_mute_video.innerHTML = ' <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
 
 
-                                video_caption.appendChild(small_unmute_audio);
-                                video_caption.appendChild(small_mute_audio);
-                                video_caption.appendChild(small_unmute_video);
-                                video_caption.appendChild(small_mute_video);
+                                video_icon.appendChild(small_unmute_audio);
+                                video_icon.appendChild(small_mute_audio);
+                                video_icon.appendChild(small_unmute_video);
+                                video_icon.appendChild(small_mute_video);
+                                video_caption.appendChild(video_icon);
                                 remote_video_item.appendChild(remote_video_inner);
                                 remote_video_item.appendChild(video_caption);
                                 document.querySelector('.row-fluid').appendChild(remote_video_item);
@@ -407,6 +447,8 @@ var confo_variables = {
                             confo_variables.isSpotLightM = false;
                             confo_variables.SpotLightUserStreamId = '';
                             confo_variables.SpotLightClientId = '';
+                            confo_variables.before
+
                         }
                         if (event.clientId === confo_variables.annotateClientId) {
                             room.stopAnnotation(function (res) {
@@ -421,6 +463,20 @@ var confo_variables = {
                             confo_variables.annotateStreamID = '';
                         }
                     }
+                    // else if (event.role === 'moderator') {
+                    //     if (confo_variables.isSpotLightP === true) {
+                    //         document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
+                    //         document.querySelector('.custom-app-wrapper').classList.remove('spotlight-open');
+                    //         var r = document.querySelector(`.remote_view_${confo_variables.SpotLightUserStreamId}`);
+                    //         var fluid = document.querySelector('.row-fluid');
+
+                    //         fluid.appendChild(r);
+
+                    //         confo_variables.SpotLightClientId = '';
+                    //         confo_variables.SpotLightUserStreamId = '';
+                    //         confo_variables.isSpotLightP = false;
+                    //     }
+                    // }
                     else {
                         if (event.clientId === confo_variables.SpotLightClientId) {
                             document.querySelector('.custom-app-wrapper').classList.remove('screen-open');
@@ -441,8 +497,48 @@ var confo_variables = {
                 });
 
 
-                room.addEventListener('user-connected', (data) => {
+                room.addEventListener('user-connected', (event) => {
                     // console.log(data);
+                    if (confo_variables.isSpotLightM === true) {
+                        room.removeSpotlightUsers([confo_variables.SpotLightClientId], function (resp) {
+                            confo_variables.isSpotLightM = false;
+                            toastr.options.positionClass = 'toast-top-right';
+                            toastr.info('Spotlight removed');
+                        })
+
+                    }
+                    if (room.me.role === 'moderator') {
+                        if (confo_variables.isAnnotate === true) {
+                            // var id_annotate_div = confo_variables.before_annotate_id.replace('a_', '');
+
+
+                            // var height = document.querySelector('.video-inner').offsetHeight;
+                            // var width = document.querySelector('.video-inner').offsetWidth;
+
+                            // // var height_value = height.replace('px','');
+                            // document.querySelector(`#draw_veneer2`).setAttribute('height', `${height}`);
+                            // document.querySelector(`#stream${parseInt(id_annotate_div)}_veneer`).setAttribute('height', `${height}`);
+                            // document.querySelector(`#draw_veneer2`).setAttribute('width', `${width}`);
+                            // document.querySelector(`#stream${parseInt(id_annotate_div)}_veneer`).setAttribute('width', `${width}`);
+
+                            room.stopAnnotation(function (res) {
+                                if (res.result == 0) {
+                                    // $("#share_screen_btn").prop("title", "Start Share").removeClass('blink-image');
+
+                                }
+                            });
+                            toastr.options.positionClass = 'toast-top-right';
+                            toastr.info('Annotation removed');
+                            document.getElementById(confo_variables.before_annotate_id).setAttribute('onclick', 'annotate(this)');
+                            document.getElementById(confo_variables.before_annotate_id).classList.replace('remove-annotate', 'annotate');
+                            confo_variables.isAnnotate = false;
+                            confo_variables.before_annotate_id = '';
+                            confo_variables.annotateClientId = '';
+                            confo_variables.annotateStreamID = '';
+
+                        }
+                    }
+                    console.log('user-connected', JSON.stringify(event));
                     confo_variables.updateUsersList();
                     // confo_variables.updateSmallIcons();
                 });
@@ -644,6 +740,16 @@ var confo_variables = {
                     // to update the user list
                 });
 
+                window.addEventListener('beforeunload', function (e) {
+                    if (confo_variables.isSpotLightM === true) {
+                        room.removeSpotlightUsers([confo_variables.SpotLightClientId], function (resp) {
+                            confo_variables.isSpotLightM = false;
+
+                        })
+                    }
+
+                });
+
             }
         });
     },
@@ -764,7 +870,7 @@ var confo_variables = {
             //     toastr.error("Screen share not supported");
             // }
         });
-        this.annotateClientId = room.activeTalkerList.get(parseInt(id_annotate_div)).clientId;
+        this.annotateClientId = confo_variables.activeTalkerInfo[parseInt(id_annotate_div)].clientId;
         document.querySelector(`#a_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
         document.querySelector(`#s_${parseInt(id_annotate_div)}`).style.zIndex = 5010;
         var height = document.querySelector('.video-inner').offsetHeight;
@@ -998,7 +1104,7 @@ var confo_variables = {
             return;
         }
         var str_id = param.id.replace('s_', '');
-        room.addSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
+        room.addSpotlightUsers([confo_variables.activeTalkerInfo[parseInt(str_id)].clientId], function (resp) {
             // resp json { "result": Number, "clients": [] }
             console.log("resp", resp);
             confo_variables.isSpotLightM = true;
@@ -1007,13 +1113,13 @@ var confo_variables = {
     spotlightRemove: function (param) {
         // To remove users from Spotlight
         var str_id = param.id.replace('s_', '');
-        room.removeSpotlightUsers([room.activeTalkerList.get(parseInt(str_id)).clientId], function (resp) {
+        room.removeSpotlightUsers([confo_variables.activeTalkerInfo[parseInt(str_id)].clientId], function (resp) {
             confo_variables.isSpotLightM = false;
 
         })
     },
     updateSmallIcons: function () {
-        room.activeTalkerList.forEach((item, index) => {
+        ATList.forEach((item, index) => {
             try {
                 if (item.mediatype === 'audio') {
                     document.querySelector(`#unmute-audio-small-${item.clientId}`).style.display = 'block';
@@ -1055,8 +1161,38 @@ var confo_variables = {
         inp.remove();
     },
     callDisconnect: function () {
+        if (this.isSpotLightM === true) {
+            room.removeSpotlightUsers([this.SpotLightClientId], function (resp) {
+                confo_variables.isSpotLightM = false;
+
+            })
+        }
+
         window.location.href = window.location.origin;
     },
+    CameraChange: function () {
+        var faceMode = this.face;
+        localStream.switchCamera(localStream, { facingMode: faceMode }, function (stream) {
+            if (stream) {
+                // if (stream.result === 0) {
+                //   local_view = stream; // LocalStream updated
+                // }
+                if (faceMode === 'user') {
+                    confo_variables.face = 'environment';
+                    // _this.title = 'Switch to back camera'
+                }
+                else {
+                    confo_variables.face = 'user';
+                    
+                    // _this.title = 'Switch to front camera'
+                }
+            }
+            else {
+                // Failed to switch
+                toastr.error(result.message);
+            }
+        });
+    }
 
 
 
@@ -1248,4 +1384,8 @@ function copyUrl() {
     toastr.options.positionClass = 'toast-top-right';
     toastr.info('URL Copied');
     confo_variables.copy();
+}
+
+function changeCamera() {
+    confo_variables.CameraChange();
 }

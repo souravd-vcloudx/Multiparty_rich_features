@@ -195,6 +195,18 @@ body.custom-multi-app-page {
     max-width: 100%;
 }
 
+.custom-multi-app-page .screen-open .video-area .video-item .video-inner video {
+    position: absolute;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    -o-object-fit: cover;
+    object-fit: cover;
+    max-width: 100%;
+    border-radius: 10px;
+}
+
 .custom-multi-app-page .video-area .video-item .video-inner #canvas-wrapper {
     position: unset !important;
 }
@@ -538,7 +550,9 @@ body.custom-multi-app-page {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
+    flex-wrap: wrap;
 }
+
 
 .custom-multi-app-page .video-area .video-item .video-caption p {
     margin: 0;
@@ -547,6 +561,10 @@ body.custom-multi-app-page {
 .custom-multi-app-page .video-area .video-item .video-caption svg {
     height: 14px;
     cursor: pointer;
+}
+
+.small_video_icon {
+    display: flex;
 }
 
 .custom-multi-app-page .video-area .row-fluid .call-disconnect {
@@ -811,6 +829,7 @@ body.custom-multi-app-page {
     /* padding-bottom: 64vh; */
     width: 100% !important;
     height: 100% !important;
+    min-height: auto !important;
     background: rgba(0,0,0,0.6);
     border-radius: 20px;
     background-size: contain;
@@ -901,35 +920,40 @@ body.custom-multi-app-page {
     min-height: initial !important;
 }
 
-.spotlight {
-    /* right: 5% !important;
-    top: 5% !important; */
-    color: black !important;
-    background-color: white !important;
-    border-radius: 50% !important;
-    height: 25px !important;
+.custom-multi-app-page .video-area .video-item .spotlight ,
+.custom-multi-app-page .video-area .video-item .annotate {
     cursor: pointer;
     margin-right: 10px;
 }
 
-.remove-spotlight {
+.custom-multi-app-page .video-area .video-item .spotlight svg ,
+.custom-multi-app-page .video-area .video-item .annotate svg {
+    height: 25px;
+    color: black !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+}
+
+.custom-multi-app-page .screen-open .screen-inner .spotannotate .remove-annotate svg,
+.custom-multi-app-page .screen-open .screen-inner .spotannotate .remove-spotlight svg{
     color: white !important;
     background-color: black !important;
     border-radius: 50% !important;
     height: 25px !important;
+}
+
+
+
+.remove-spotlight {
+    /* color: white !important;
+    background-color: black !important;
+    border-radius: 50% !important;
+    height: 25px !important; */
     cursor: pointer;
     margin-right: 10px;
 }
 
-.annotate{
-    /* right: 20% !important;
-    top: 5% !important; */
-    color: black !important;
-    background-color: white !important;
-    border-radius: 50% !important;
-    height: 25px !important;
-    cursor: pointer;
-}
+
 
 .remove-annotate {
     color: white !important;
@@ -941,6 +965,17 @@ body.custom-multi-app-page {
  
 .spotannotate{
     display: flex;
+    position: absolute;
+    right: 10%;
+    top: 10%;
+}
+
+.custom-multi-app-page .screen-open #self-view ,
+.custom-multi-app-page .screen-open #self-view video {
+    border-radius: 10px;
+}
+
+#s_self-view {
     position: absolute;
     right: 10%;
     top: 10%;
@@ -972,6 +1007,7 @@ body.custom-multi-app-page {
     display: flex;
     bottom: 10px;
     right: 20px;
+    color: white;
 }
 
 .video-item {
@@ -990,12 +1026,79 @@ body.custom-multi-app-page {
     right: 120px !important;
 }
 
-.custom-multi-app-page .spotlight-open .video-area .video-item .video-caption {
+.custom-multi-app-page .screen-open .video-area .video-item .video-caption {
     right: 4px;
+    position: absolute;
+    bottom: 0px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 5px;
+    color: #fff;
+    padding: 1px 10px;
+    font-size: 13px;
+    /* right: 10px; */
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }
 
 .custom-multi-app-page .spotlight-open .video-area .video-item .video-caption svg {
     margin: 0;
+}
+
+.custom-multi-app-page .screen-open .video-area .video-item .spotlight svg ,
+.custom-multi-app-page .screen-open .video-area .video-item .annotate svg 
+{
+    height: 15px;
+    width: 15px;
+    color: black !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+    /* height: 25px !important; */
+}
+
+.custom-multi-app-page .screen-open .video-area .video-item .remove-spotlight svg ,
+.custom-multi-app-page .spotlight-open .video-area .video-item .remove-annotate svg {
+    height: 15px;
+    width: 15px;
+    color: white !important;
+    background-color: black !important;
+    border-radius: 50% !important;
+}
+
+
+.custom-multi-app-page .screen-open .video-area .video-item .spotannotate {
+    display: flex;
+    position: absolute;
+    right: 0%;
+    top: 3%;
+}
+
+.custom-multi-app-page .spotlight-open .video-area .video-item .spotlight svg ,
+.custom-multi-app-page .screen-open .video-area .video-item .annotate svg
+{
+    height: 15px;
+    width: 15px;
+    color: black !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+    /* height: 25px !important; */
+}
+
+.custom-multi-app-page .spotlight-open .screen-inner .video-item .spotannotate .annotate svg{
+    height: 25px;
+    width: 25px;
+    color: black !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+}
+
+.custom-multi-app-page .screen-open .video-area .video-item .video-caption p {
+    font-size: xx-small;
 }
 
 .close-icon {
@@ -1025,8 +1128,8 @@ body.custom-multi-app-page {
 }
 
 .invite-btn {
-    position: absolute;
-    right: 30px;
+    /* position: absolute;
+    right: 30px; */
 }
 
 #player_102 video {
@@ -1242,7 +1345,7 @@ body.custom-multi-app-page {
     .custom-multi-app-page .screen-open .participants-area ,
     .custom-multi-app-page .screen-open .settings-area 
     {
-        height: 0;
+        height: auto;
     }
 
     .screen-open .call-disconnect {

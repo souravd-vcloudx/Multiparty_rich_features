@@ -73,7 +73,20 @@
                                         </svg>
                                     </a>
                                 </li>
-                                <li class="settings-btn" title="Settings">
+                                <!-- <li id="switch_cam" title="Change camera"
+                                    style="display: none;" onclick="changeCamera()">
+                                    <a>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="css-i6dzq1">
+                                            <path
+                                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                            </path>
+                                            <circle cx="12" cy="13" r="4"></circle>
+                                        </svg>
+                                    </a>
+                                </li> -->
+                                <li class="settings-btn" id="switch_devices" title="Settings">
                                     <a>
                                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                             stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -174,7 +187,7 @@
                         </div>
 
                     </div>
-                    <div class="chat-area">
+                    <div class="chat-area" style="z-index: 5020;">
                         <div class="chat-head">
                             <h3>Live Chat</h3>
                             <div class="close-icon" onclick="closeArea();"><span></span><span></span></div>
@@ -233,7 +246,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="participants-area">
+                    <div class="participants-area" style="z-index: 5020;">
                         <div class="chat-head">
                             <h3>Participants List</h3>
                             <div class="close-icon" onclick="closeArea();"><span></span><span></span></div>
@@ -252,7 +265,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-area">
+
+                    <div class="settings-area" style="z-index: 5020;">
                         <div class="chat-head">
                             <h3>Device List</h3>
                             <div class="close-icon" onclick="closeArea();"><span></span><span></span></div>
@@ -311,7 +325,7 @@
                             </li>
                             <li>
                                 <a id="mute_btn" title='Mute Audio'>
-                                    <svg  viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
                                         class="css-i6dzq1" onclick="muteAudio()" id="unmute-audio-pic">
                                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -333,7 +347,7 @@
                             </li>
                             <li>
                                 <a id="mutev_btn" title="Mute Video">
-                                    <svg  viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                                         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
                                         class="css-i6dzq1" onclick="muteVideo()" id="unmute-video-pic">
                                         <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -417,7 +431,8 @@
                                     </svg>
                                 </a>
                             </li>
-                            <li class="recording-btn" title="Start/Stop Recording" onclick="startRecording()" style="display: none;">
+                            <li class="recording-btn" title="Start/Stop Recording" onclick="startRecording()"
+                                style="display: none;">
                                 <a>
                                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="red" stroke-width="2"
                                         fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
@@ -439,7 +454,8 @@
                                     <span>Leave</span>
                                 </a>
                             </li>
-                            <li class="invite-btn" id="invite_url" title="Invite URL" style="display: none;" onclick="copyUrl()">
+                            <li class="invite-btn" id="invite_url" title="Invite URL" style="display: none;"
+                                onclick="copyUrl()">
                                 <a style="color: red;">
                                     <span>Invite URL</span>
                                 </a>
