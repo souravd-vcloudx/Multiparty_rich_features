@@ -1459,6 +1459,6 @@ body.custom-multi-app-page {
 @media (max-width: 400px) {
     .screen-open.spotlight-open .video-inner-copy video {
         width:200px !important;
-        height: auto !important;
+/*         height: auto !important; */
     }
 }
