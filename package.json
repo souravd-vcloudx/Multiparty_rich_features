@@ -9,7 +9,7 @@
   ],
   "main": "server.js",
   "scripts": {
-    "start": "cd server & node server.js"
+    "start": "cd server && node server.js"
   },
   "devDependencies": {
     "eslint": "^7.7.0",
