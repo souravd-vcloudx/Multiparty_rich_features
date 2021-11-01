@@ -1,5 +1,5 @@
 {
-  "name": "One-to-One-Video-Chat-Sample-Web-Application",
+  "name": "Video-Conference-Web-Sample-Application",
   "version": "1.0.1",
   "description": "Sample Application to enable developers to understand how to build applications using EnableX Video API.",
   "keywords": [
@@ -9,7 +9,7 @@
   ],
   "main": "server.js",
   "scripts": {
-    "start": "node ./server/server.js"
+    "start": "cd server & node server.js"
   },
   "devDependencies": {
     "eslint": "^7.7.0",
